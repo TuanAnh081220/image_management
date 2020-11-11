@@ -1,0 +1,12 @@
+#ide
+.idea
+.vscode
+
+#env
+venv
+
+# Docker data
+volumes
+
+# Environment
+.env
