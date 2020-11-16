@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     command: bash -c "bash scripts/start-server.sh"
-    restart: on-failure
+    restart: always
     env_file:
       - .env
     volumes:

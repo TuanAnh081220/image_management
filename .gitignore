@@ -1,3 +1,11 @@
+# Byte-compiled / optimized / DLL files
+*.log
+*.pot
+*.pyc
+*/*/*/__pycache__/
+*/*/__pycache__/
+*/__pycache__/
+
 #ide
 .idea
 .vscode
