@@ -3,8 +3,18 @@ Install
 ```docker```
 ```docker-compose```
 
+Create env, install requirements
+```
+pip install -r requirements.txt
+```
+
 Run
 ```
-docker-compose up
+make runserver
+```
+
+Migrate
+```
+make migrate
 ```
 
