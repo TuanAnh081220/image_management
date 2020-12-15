@@ -1,14 +1,12 @@
 from django.conf import settings
-from django.contrib.auth import authenticate
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .serializers import RegisterSerializer, UserLoginSerializer
+from .serializers import RegisterSerializer, UserLoginSerializer, MyTokenObtainPairSerializer
 
-from .models import Users
+from apis.users.models import Users
 
 
 # Create your views here.
@@ -17,8 +15,6 @@ from .models import Users
 def register(request):
     serializer = RegisterSerializer(data=request.data)
     if serializer.is_valid():
-        print("something here")
-        print(serializer)
         serializer.save()
 
         return JsonResponse({
@@ -42,7 +38,7 @@ def login(request):
         print(serializer.validated_data['password'])
         user = Users.objects.get(email=email, password=password)
         if user:
-            refresh = TokenObtainPairSerializer.get_token(user)
+            refresh = MyTokenObtainPairSerializer.get_token(user)
             data = {
                 'refresh_token': str(refresh),
                 'access_token': str(refresh.access_token),
