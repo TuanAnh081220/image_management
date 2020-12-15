@@ -4,7 +4,7 @@ from django.db import models
 
 # Create your models here.
 
-class Users(AbstractUser):
+class Users(AbstractUser, models.Model):
     username = None
     is_staff = None
     is_superuser = None
@@ -25,8 +25,8 @@ class Users(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    def __str__(self):
-        return self.user_name
+    # def __str__(self):
+    #     return self.user_name
 
     class Meta:
         db_table = 'users'
@@ -39,8 +39,8 @@ class PendingUsers(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.user_name + " " + self.email
+    # def __str__(self):
+    #     return self.user_name + " " + self.email
 
     class Meta:
         db_table = 'pending_users'
