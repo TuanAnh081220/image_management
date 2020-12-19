@@ -31,7 +31,6 @@ class ImagesList(generics.ListAPIView):
         return Images.objects.filter(is_trashed=False, owner_id=user_id).order_by('-updated_at')
 
 
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def upload_image(request):

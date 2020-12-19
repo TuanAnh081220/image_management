@@ -22,7 +22,8 @@ urlpatterns = [
     path('admin', admin.site.urls),
     path('auths/', include('apis.auths.urls')),
     path('users/', include('apis.users.urls')),
-    path('images/', include('apis.images.urls'))
+    path('images/', include('apis.images.urls')),
+    path('folders/', include('apis.folders.urls'))
 ]
 
 if settings.DEBUG:
