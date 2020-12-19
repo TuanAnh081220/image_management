@@ -1,5 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import UpdateAPIView
@@ -16,6 +17,9 @@ class UsersViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated, IsAdmin]
     queryset = Users.objects.all()
     serializer_class = UserSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['is_admin', 'is_blocked']
+    search_fields = ['email', 'username']
 
 
 class UserUpdateView(UpdateAPIView):
@@ -127,3 +131,11 @@ def example_view(request):
         'status': 'request was permitted'
     }
     return Response(content)
+
+
+def get_user_from_id(user_id):
+    try:
+        user = Users.objects.get(id=user_id)
+        return user
+    except ObjectDoesNotExist:
+        return ObjectDoesNotExist
