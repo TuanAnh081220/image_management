@@ -5,7 +5,6 @@ from apis.images.models import Images
 # Create your models here.
 class Tags(models.Model):
     name = models.CharField(max_length=45, null=False)
-    #owner_id = models.ForeignKey(Users, on_delete=models.CASCADE)
     owner_id = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True, null=False)
     updated_at = models.DateTimeField(auto_now=True, null=False)
@@ -17,6 +16,6 @@ class Tags(models.Model):
         db_table = 'tags'
 
 class Images_Tags(models.Model):
-    image_id = models.ForeignKey(Images, on_delete=models.CASCADE)
-    tag_id = models.ForeignKey(Tags, on_delete=models.CASCADE)
+    image = models.ForeignKey(Images, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tags, on_delete=models.CASCADE)
 

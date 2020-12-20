@@ -18,21 +18,22 @@ from .models import Tags
 def tag_list(request):
     tags = Tags.objects.all()
     serializer = GetAllTagSerializer(tags, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return JsonResponse(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def tag_detail(request, name):
     tags = Tags.objects.get(name=name)
     serializer = GetAllTagSerializer(tags, many=False)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return JsonResponse(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 #@permission_classes([IsAuthenticated])
 def tag_create(request):
     serializer = TagCreateSerializer(data=request.data)
     if not serializer.is_valid():
-        return Response('Invalid', status=status.HTTP_400_BAD_REQUEST)
-    tags = Tags.objects.all()
+        return JsonResponse({
+            'message': 'Invalid'
+        }, status=status.HTTP_400_BAD_REQUEST)
     tag_name = serializer.data['name']
     try:
         Tags.objects.get(name=tag_name)
@@ -40,5 +41,9 @@ def tag_create(request):
         #owner_id = get_user_id_from_jwt(request)
         owner_id = 1
         new_tag = Tags.objects.create(name=tag_name, owner_id=owner_id)
-        return Response('Tag created', status=status.HTTP_200_OK)
-    return Response('Tag existed', status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({
+            'message': 'Tag created'
+        }, status=status.HTTP_200_OK)
+    return JsonResponse({
+        'message': 'Tag existed'
+    }, status=status.HTTP_400_BAD_REQUEST)

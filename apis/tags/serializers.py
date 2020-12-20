@@ -12,4 +12,4 @@ class TagCreateSerializer(serializers.Serializer):
 class ImageTagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Images_Tags
-        fields = ('image_id', 'tag_id')
+        fields = ('image', 'tag')
