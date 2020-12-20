@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'apis.users',
     'apis.images',
     'apis.tags',
+    'apis.folders',
     'rest_framework',
     'django_filters',
     'corsheaders'

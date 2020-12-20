@@ -10,7 +10,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 from utils.user import get_user_id_from_jwt
-from .serializers import UploadImagesSerializer, DetailedImageSerializer, MultipleImageIDsSerializer, ImageSerializer
+from utils.serializers import MultiplIDsSerializer
+from .serializers import UploadImagesSerializer, DetailedImageSerializer, ImageSerializer
 from .models import Images
 from apis.users.views import get_user_from_id
 
@@ -29,7 +30,6 @@ class ImagesList(generics.ListAPIView):
     def get_queryset(self):
         user_id = get_user_id_from_jwt(self.request)
         return Images.objects.filter(is_trashed=False, owner_id=user_id).order_by('-updated_at')
-
 
 
 @api_view(['POST'])
@@ -120,9 +120,8 @@ def trash_image(request, image_id):
 @permission_classes([IsAuthenticated])
 def trash_multiple_image(request):
     user_id = get_user_id_from_jwt(request)
-    serializer = MultipleImageIDsSerializer(data=request.data)
+    serializer = MultiplIDsSerializer(data=request.data)
     if not serializer.is_valid():
-        print("something")
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
     image_ids = serializer.data['ids']
     for image_id in image_ids:
