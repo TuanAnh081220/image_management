@@ -9,6 +9,6 @@ class FolderSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'owner_id', 'parent_id')
 
 
-class CreateFolderSerializer(serializers.Serializer):
+class CreateOrUpdateFolderSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=45)
     parent_id = serializers.IntegerField(min_value=0)
