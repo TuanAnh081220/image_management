@@ -31,6 +31,7 @@ def register(request):
 @api_view(['POST'])
 def login(request):
     serializer = UserLoginSerializer(data=request.data)
+    print(request.data)
     if serializer.is_valid():
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
@@ -50,4 +51,7 @@ def login(request):
             'error_message': 'Email or password is incorrect!',
             'error_code': 400
         }, status=status.HTTP_400_BAD_REQUEST)
-
+    print("something here")
+    return JsonResponse({
+        'message': 'invalid user_name or password'
+    }, status=status.HTTP_400_BAD_REQUEST)
