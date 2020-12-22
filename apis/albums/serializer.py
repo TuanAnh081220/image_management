@@ -11,3 +11,5 @@ class DetailedAlbumSerializer(serializers.ModelSerializer):
         model = Albums
         fields = '__all__'
 
+class UpdateOrCreateAlbumSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=45)

@@ -15,10 +15,11 @@ class Albums(models.Model):
 
     class Meta:
         db_table = "albums"
+        ordering = ['title', 'updated_at', 'created_at']
 
 class AlbumsHaveImages(models.Model):
-    album_id = models.ForeignKey(Albums, on_delete=models.CASCADE)
-    image_id = models.ForeignKey(Images, on_delete=models.CASCADE)
+    album = models.ForeignKey(Albums, on_delete=models.CASCADE)
+    image = models.ForeignKey(Images, on_delete=models.CASCADE)
     
     class Meta:
         db_table = "albums_have_images"
