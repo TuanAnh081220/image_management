@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'apis.images',
     'apis.tags',
     'apis.folders',
+    'apis.albums',
     'rest_framework',
     'django_filters',
     'corsheaders'
