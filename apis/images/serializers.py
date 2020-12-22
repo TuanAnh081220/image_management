@@ -32,3 +32,8 @@ class TrashImageSerializer(serializers.Serializer):
 
 class RemoveImageTagSerializer(serializers.Serializer):
     tag_id = serializers.IntegerField()
+
+class ImageIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Images
+        fields = ('id', 'title')

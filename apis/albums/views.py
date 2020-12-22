@@ -6,15 +6,15 @@ from rest_framework.response import Response
 import json
 from utils.user import get_user_id_from_jwt
 from .models import Albums, AlbumsHaveImages
-
+from apis.images.models import Images
 from rest_framework import status, generics, filters
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 from datetime import datetime
 
-from .serializer import AlbumsSerializer, DetailedAlbumSerializer, UpdateOrCreateAlbumSerializer
-
+from .serializer import AlbumsSerializer, DetailedAlbumSerializer, UpdateOrCreateAlbumSerializer, AddImageToAlbumSerializer, ListImageInAlbum
+from apis.images.serializers import ImageIdSerializer
 
 class AlbumsList(generics.ListAPIView):
     serializer_class = AlbumsSerializer
@@ -178,6 +178,59 @@ def get_albums_filter_by_star_status(request, star):
     except ObjectDoesNotExist:
         return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_image_to_album(request, album_id):
+    serializer = AddImageToAlbumSerializer(data=request.data)
+    album = get_album_by_id(album_id)
+    if not serializer.is_valid():
+        return JsonResponse({
+            "message": "Invalid serializer"
+        }, status=status.HTTP_400_BAD_REQUEST)
+    image_id = serializer.data['image_id']
+    try:
+        Images.objects.get(id=image_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({
+            "message": "Image does not exist"
+        }, status=status.HTTP_404_NOT_FOUND)
+    try:
+        AlbumsHaveImages.objects.get(album_id=album_id, image_id=image_id)
+    except ObjectDoesNotExist:
+        AlbumsHaveImages.objects.create(album=album, image_id=image_id)
+        return JsonResponse({
+            "message": "sucessfully"
+        }, status=status.HTTP_200_OK)
+    return JsonResponse({
+        "message": "Album already had this image"
+    }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_image_in_album(requets, album_id):
+    album = get_album_by_id(album_id)
+    if album is None:
+        return JsonResponse({
+            "message": "Invalid Album"
+        }, status=status.HTTP_404_NOT_FOUND)
+    user_id = get_user_id_from_jwt(requets)
+    if not is_owner(album.owner.id, user_id):
+        return JsonResponse({
+            "message": "permission denied"
+        }, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = ListImageInAlbum(instance=album)
+
+    image = Images.objects.raw("SELECT id FROM images WHERE id IN (SELECT image_id FROM albums_have_images WHERE album_id = " + str(album_id) + ")")
+
+    image_id_serializer = ImageIdSerializer(image, many=True)
+
+    data = serializer.data
+    data['images'] = image_id_serializer.data
+
+    return JsonResponse({
+        "album": data
+    }, status=status.HTTP_200_OK)
 
 def change_album_star_status(instance, status):
     instance.star = status
@@ -185,13 +238,12 @@ def change_album_star_status(instance, status):
     instance.save()
     return instance
 
-
-def get_album_by_id(request, album_id):
+def get_album_by_id(album_id):
     try:
         album = Albums.objects.get(id=album_id)
-        return JsonResponse({"album_name": album.title}, safe=False)
+        return album
     except ObjectDoesNotExist:
-        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+        return None
 
 
 def is_owner(owner_id, user_id):
