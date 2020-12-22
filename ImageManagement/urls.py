@@ -24,6 +24,7 @@ urlpatterns = [
     path('users/', include('apis.users.urls')),
     path('images/', include('apis.images.urls')),
     path('tags/', include('apis.tags.urls')),
+    path('folders/', include('apis.folders.urls'))
 ]
 
 if settings.DEBUG:

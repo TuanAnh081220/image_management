@@ -16,6 +16,8 @@ class Tags(models.Model):
         db_table = 'tags'
 
 class Images_Tags(models.Model):
-    image = models.ForeignKey(Images, on_delete=models.CASCADE)
-    tag = models.ForeignKey(Tags, on_delete=models.CASCADE)
+    image = models.ForeignKey(Images, on_delete=models.CASCADE, related_name="image_tag")
+    tag = models.ForeignKey(Tags, on_delete=models.CASCADE, related_name="tag_image")
 
+    class Meta:
+        db_table = 'images_tags'
