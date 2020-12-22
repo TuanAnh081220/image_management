@@ -23,6 +23,7 @@ urlpatterns = [
     path('auths/', include('apis.auths.urls')),
     path('users/', include('apis.users.urls')),
     path('images/', include('apis.images.urls')),
+    path('tags/', include('apis.tags.urls')),
     path('albums/', include('apis.albums.urls')),
     path('folders/', include('apis.folders.urls'))
 ]
