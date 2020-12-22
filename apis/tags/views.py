@@ -4,7 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 
-from rest_framework import status, generics
+from rest_framework import status, generics, filters
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -18,7 +18,7 @@ from .models import Tags, Images_Tags
 class TagsList(generics.ListAPIView):
     serializer_class = TagSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['name']
 
     def get_queryset(self):

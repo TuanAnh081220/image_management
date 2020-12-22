@@ -5,7 +5,7 @@ from django.http import JsonResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import status, generics
+from rest_framework import status, generics, filters
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
@@ -27,7 +27,7 @@ from ..tags.serializers import SetImageTagSerializer
 class ImagesList(generics.ListAPIView):
     serializer_class = ImageSerializer
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['star']
     search_fields = ['title']
 
