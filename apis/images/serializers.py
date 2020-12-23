@@ -35,3 +35,6 @@ class RemoveImageTagSerializer(serializers.Serializer):
 
 class MoveImageToFolderSerializer(serializers.Serializer):
     folder_id = serializers.IntegerField()
+
+class ShareImageSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()

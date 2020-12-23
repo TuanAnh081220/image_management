@@ -1,8 +1,6 @@
 from django.db import models
 
 from apis.users.models import Users
-from apis.folders.models import Folders
-
 
 # Create your models here.
 
@@ -18,6 +16,7 @@ class Images(models.Model):
     trashed_at = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=False)
     updated_at = models.DateTimeField(auto_now=True, null=False)
+    publicity = models.BooleanField(default=False, null=False)
 
     def __str__(self):
         return self.title

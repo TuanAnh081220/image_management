@@ -12,11 +12,12 @@ from rest_framework.permissions import IsAuthenticated
 from utils.user import get_user_id_from_jwt
 from utils.serializers import MultiplIDsSerializer
 from .serializers import UploadImagesSerializer, DetailedImageSerializer, ImageSerializer, RemoveImageTagSerializer, \
-                        MoveImageToFolderSerializer
-from .models import Images
+                        MoveImageToFolderSerializer, ShareImageSerializer
+from .models import Images, Shared_Images
 from apis.users.views import get_user_from_id
 from apis.tags.serializers import TagSerializer
 from apis.folders.models import Folders
+from apis.users.models import Users
 
 from datetime import datetime
 
@@ -433,7 +434,10 @@ def move_image_to_folder(request, image_id):
                 'message': 'Folder not found'
             }, status=status.HTTP_404_NOT_FOUND)
     image.folder_id = folder_id
+    image.updated_at = datetime.now()
     image.save()
     return JsonResponse({
         'message': "Image's moved"
     }, status=status.HTTP_200_OK)
+
+
