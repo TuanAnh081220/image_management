@@ -32,3 +32,6 @@ class TrashImageSerializer(serializers.Serializer):
 
 class RemoveImageTagSerializer(serializers.Serializer):
     tag_id = serializers.IntegerField()
+
+class MoveImageToFolderSerializer(serializers.Serializer):
+    folder_id = serializers.IntegerField()

@@ -1,6 +1,7 @@
 from django.db import models
 
 from apis.users.models import Users
+from apis.folders.models import Folders
 
 
 # Create your models here.
@@ -10,7 +11,7 @@ class Images(models.Model):
     path = models.CharField(max_length=2000, null=False)
     thumbnail_path = models.CharField(max_length=2000, null=False)
     owner = models.ForeignKey(Users, on_delete=models.CASCADE, null=False)
-    folder_id = models.IntegerField(default=0)
+    folder_id = models.IntegerField()
     star = models.BooleanField(default=False, null=False)
     size = models.IntegerField(null=False)
     is_trashed = models.BooleanField(default=False, null=False)
