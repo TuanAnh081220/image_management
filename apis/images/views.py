@@ -378,6 +378,7 @@ def set_image_tag(request, image_id):
         Images_Tags.objects.get(image_id=image_id, tag_id=tag_id)
     except ObjectDoesNotExist:
         Images_Tags.objects.create(image=image, tag_id=tag_id)
+        Tags.objects.get(tag_id=tag_id).updated_at = datetime.now()
         return JsonResponse({
             'message': 'Tag added'
         }, status=status.HTTP_200_OK)
@@ -402,6 +403,7 @@ def remove_image_tag(request, image_id):
             'message': "Image doesn't have this tag"
         }, status=status.HTTP_404_NOT_FOUND)
     Images_Tags.objects.filter(image_id=image_id, tag_id=tag_id).delete()
+    Tags.objects.get(tag_id=tag_id).updated_at = datetime.now()
     return JsonResponse({
         'message': 'Tag removed'
     }, status=status.HTTP_200_OK)
