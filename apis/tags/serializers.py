@@ -20,19 +20,15 @@ class ImageTagSerializer(serializers.ModelSerializer):
         fields = 'tag_name'
 
 class TagDetailSerializer(serializers.ModelSerializer):
-    #images = TagImageSerializer(source='tag_image', many=True)
     class Meta:
         model = Tags
         fields = '__all__'
 
-    def get_images(self, obj):
-        return obj.id
-
-class GetImageTagSerializer(serializers.ModelSerializer):
-    tags = ImageTagSerializer(source='image_tag', many=True)
-    class Meta:
-        model = Images
-        fields = ('id', 'title', 'tags')
+# class GetImageTagSerializer(serializers.ModelSerializer):
+#     tags = ImageTagSerializer(source='image_tag', many=True)
+#     class Meta:
+#         model = Images
+#         fields = ('id', 'title', 'tags')
 
 class TagCreateSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=45)
