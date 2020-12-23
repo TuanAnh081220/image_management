@@ -13,7 +13,7 @@ from utils.user import get_user_id_from_jwt
 from utils.serializers import MultiplIDsSerializer
 from .serializers import UploadImagesSerializer, DetailedImageSerializer, ImageSerializer, RemoveImageTagSerializer, \
                         MoveImageToFolderSerializer, ShareImageSerializer
-from .models import Images, Shared_Images
+from .models import Images
 from apis.users.views import get_user_from_id
 from apis.tags.serializers import TagSerializer
 from apis.folders.models import Folders

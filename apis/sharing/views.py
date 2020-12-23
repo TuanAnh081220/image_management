@@ -1,6 +1,21 @@
+import datetime
+
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
 from django.shortcuts import render
 
 # Create your views here.
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+from apis.images.models import Images
+from apis.images.serializers import ShareImageSerializer
+from apis.sharing.models import Shared_Images
+from apis.users.models import Users
+from utils.user import get_user_id_from_jwt
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def share_image(request, image_id):
