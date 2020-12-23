@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'apis.albums',
     'rest_framework',
     'django_filters',
-    'corsheaders'
+    'corsheaders',
+    'django_crontab',
 ]
 
 MIDDLEWARE = [
@@ -170,3 +171,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+CRONJOBS = [
+    ('* * * * *', 'apis.images.cron.trash_image')
+]
