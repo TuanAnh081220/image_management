@@ -5,7 +5,7 @@ from apis.images.models import Images
 # Create your models here.
 class Tags(models.Model):
     name = models.CharField(max_length=45, null=False)
-    owner = models.IntegerField()
+    owner = models.ForeignKey(Users, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=False)
     updated_at = models.DateTimeField(auto_now=True, null=False)
 

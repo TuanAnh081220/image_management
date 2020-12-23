@@ -23,8 +23,7 @@ from datetime import datetime
 
 import magic
 
-from ..tags.models import Tags, Images_Tags
-from ..tags.serializers import SetImageTagSerializer
+from ..tags.models import Tags
 
 
 class ImagesList(generics.ListAPIView):
@@ -361,53 +360,6 @@ def test_upload_image_view(request):
         'user': "hihi"
     }, status=status.HTTP_200_OK)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def set_image_tag(request, image_id):
-    serializer = SetImageTagSerializer(data=request.data)
-    image = get_image_by_id(image_id)
-    if not serializer.is_valid():
-        return JsonResponse({
-            'message': 'Invalid'
-        }, status=status.HTTP_400_BAD_REQUEST)
-    tag_id = serializer.data['tag_id']
-    try:
-        Tags.objects.get(id=tag_id)
-    except ObjectDoesNotExist:
-        return JsonResponse({
-            'message': 'Tag does not exist'
-        }, status=status.HTTP_404_NOT_FOUND)
-    try:
-        Images_Tags.objects.get(image_id=image_id, tag_id=tag_id)
-    except ObjectDoesNotExist:
-        Images_Tags.objects.create(image=image, tag_id=tag_id)
-        return JsonResponse({
-            'message': 'Tag added'
-        }, status=status.HTTP_200_OK)
-    return JsonResponse({
-        'message': "Image already had this tag"
-    }, status=status.HTTP_404_NOT_FOUND)
-
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def remove_image_tag(request, image_id):
-    serializer = RemoveImageTagSerializer(data=request.data)
-    if not serializer.is_valid():
-        return JsonResponse({
-            'message': 'Invalid'
-        }, status=status.HTTP_400_BAD_REQUEST)
-    tag_id = serializer.data['tag_id']
-    try:
-        Images_Tags.objects.get(image_id=image_id, tag_id=tag_id)
-    except ObjectDoesNotExist:
-        return JsonResponse({
-            'message': "Image doesn't have this tag"
-        }, status=status.HTTP_404_NOT_FOUND)
-    Images_Tags.objects.filter(image_id=image_id, tag_id=tag_id).delete()
-    return JsonResponse({
-        'message': 'Tag removed'
-    }, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

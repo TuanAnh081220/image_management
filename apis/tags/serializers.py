@@ -43,3 +43,8 @@ class SetImageTagSerializer(serializers.Serializer):
 
 class TagRemoveSerializer(serializers.Serializer):
     tag_name = serializers.CharField()
+
+class ImageFilteringByTagSerializer(serializers.Serializer):
+    tag_list = serializers.ListField(
+        child=serializers.IntegerField()
+    )
