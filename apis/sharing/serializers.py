@@ -5,7 +5,12 @@ from apis.sharing.models import Shared_Images
 
 
 class SharingImageSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField()
+    image_id = serializers.ListField(
+        child=serializers.IntegerField()
+    )
+    user_id = serializers.ListField(
+        child=serializers.IntegerField()
+    )
 
 
 class SharedImageSerializer(serializers.ModelSerializer):
