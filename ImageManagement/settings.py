@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apis.tags',
     'apis.folders',
     'apis.albums',
+    'apis.sharing',
     'rest_framework',
     'django_filters',
     'corsheaders'
@@ -119,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC+7'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 

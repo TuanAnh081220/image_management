@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Images
-from apis.tags.serializers import ImageTagSerializer
+
 
 
 class UploadImagesSerializer(serializers.Serializer):
@@ -35,6 +35,3 @@ class RemoveImageTagSerializer(serializers.Serializer):
 
 class MoveImageToFolderSerializer(serializers.Serializer):
     folder_id = serializers.IntegerField()
-
-class ShareImageSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField()
