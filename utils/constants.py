@@ -1,0 +1,1 @@
+TRASH_TIME = 30

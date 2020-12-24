@@ -40,7 +40,7 @@ class ImagesList(generics.ListAPIView):
 
 
 @api_view(['POST'])
-#@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def upload_image(request):
     if not request.FILES['images']:
         return JsonResponse({
@@ -83,7 +83,7 @@ def upload_image(request):
 
 
 @api_view(['GET'])
-#@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def get_detailed_image(request, image_id):
     image = get_image_by_id(image_id)
     if image is None:
@@ -174,7 +174,7 @@ def restore_image(request, image_id):
 @permission_classes([IsAuthenticated])
 def restore_multiple_image(request):
     user_id = get_user_id_from_jwt(request)
-    serializer = MultipleImageIDsSerializer(data=request.data)
+    serializer = MultiplIDsSerializer(data=request.data)
     if not serializer.is_valid():
         print("something")
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
@@ -210,7 +210,7 @@ def delete_image(request, image_id):
 @permission_classes([IsAuthenticated])
 def delete_multiple_image(request):
     user_id = get_user_id_from_jwt(request)
-    serializer = MultipleImageIDsSerializer(data=request.data)
+    serializer = MultiplIDsSerializer(data=request.data)
     if not serializer.is_valid():
         print("something")
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
