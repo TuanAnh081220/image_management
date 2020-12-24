@@ -11,10 +11,13 @@ from rest_framework.permissions import IsAuthenticated
 
 from utils.user import get_user_id_from_jwt
 from utils.serializers import MultiplIDsSerializer
-from .serializers import UploadImagesSerializer, DetailedImageSerializer, ImageSerializer, RemoveImageTagSerializer
+from .serializers import UploadImagesSerializer, DetailedImageSerializer, ImageSerializer, RemoveImageTagSerializer, \
+                        MoveImageToFolderSerializer
 from .models import Images
 from apis.users.views import get_user_from_id
 from apis.tags.serializers import TagSerializer
+from apis.folders.models import Folders
+from apis.users.models import Users
 
 from datetime import datetime
 
@@ -407,3 +410,36 @@ def remove_image_tag(request, image_id):
     return JsonResponse({
         'message': 'Tag removed'
     }, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def move_image_to_folder(request, image_id):
+    try:
+        image = Images.objects.get(id=image_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({
+            'message': 'Image not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = MoveImageToFolderSerializer(data=request.data)
+    if not serializer.is_valid():
+        return JsonResponse({
+            'message': 'Invalid'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    folder_id = serializer.data['folder_id']
+    if folder_id != 0:
+        try:
+            Folders.objects.get(id=folder_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'message': 'Folder not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+    image.folder_id = folder_id
+    image.updated_at = datetime.now()
+    image.save()
+    return JsonResponse({
+        'message': "Image's moved"
+    }, status=status.HTTP_200_OK)
+
+

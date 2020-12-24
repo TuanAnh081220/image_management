@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Images
-from apis.tags.serializers import ImageTagSerializer
+
 
 
 class UploadImagesSerializer(serializers.Serializer):
@@ -32,3 +32,16 @@ class TrashImageSerializer(serializers.Serializer):
 
 class RemoveImageTagSerializer(serializers.Serializer):
     tag_id = serializers.IntegerField()
+
+class MoveImageToFolderSerializer(serializers.Serializer):
+    folder_id = serializers.IntegerField()
+
+class ImageIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Images
+        fields = ('id', 'title', 'thumbnail_path',)
+
+class ThumbnailPathImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Images
+        fields = ('thumbnail_path', )
