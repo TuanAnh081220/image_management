@@ -39,7 +39,7 @@ class ImagesList(generics.ListAPIView):
 
 
 @api_view(['POST'])
-#@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def upload_image(request):
     if not request.FILES['images']:
         return JsonResponse({

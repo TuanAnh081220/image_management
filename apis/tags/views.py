@@ -27,7 +27,7 @@ class TagsList(generics.ListAPIView):
 
     def get_queryset(self):
         user_id = get_user_id_from_jwt(self.request)
-        return Tags.objects.filter(Q(owner_id=0) | Q(owner_id=user_id)).order_by('-updated_at')
+        return Tags.objects.filter(Q(owner=None) | Q(owner_id=user_id)).order_by('-updated_at')
 
 # Create your views here.
 @api_view(['GET'])

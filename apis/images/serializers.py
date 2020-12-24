@@ -35,3 +35,13 @@ class RemoveImageTagSerializer(serializers.Serializer):
 
 class MoveImageToFolderSerializer(serializers.Serializer):
     folder_id = serializers.IntegerField()
+
+class ImageIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Images
+        fields = ('id', 'title', 'thumbnail_path',)
+
+class ThumbnailPathImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Images
+        fields = ('thumbnail_path', )
