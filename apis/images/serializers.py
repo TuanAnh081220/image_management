@@ -32,3 +32,13 @@ class TrashImageSerializer(serializers.Serializer):
 
 class RemoveImageTagSerializer(serializers.Serializer):
     tag_id = serializers.IntegerField()
+
+class ImageIdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Images
+        fields = ('id', 'title', 'thumbnail_path',)
+
+class ThumbnailPathImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Images
+        fields = ('thumbnail_path', )
