@@ -9,8 +9,8 @@ from .views import test_upload_image_view, ImagesList, upload_image, \
     restore_multiple_image, \
     star_image, \
     un_star_image, \
-    set_image_tag, \
-    remove_image_tag
+    move_image_to_folder
+from ..tags.views import filter_image_by_tag, set_image_tag, remove_image_tag
 
 urlpatterns = [
     path('', ImagesList.as_view(), name="list_images"),
@@ -25,4 +25,6 @@ urlpatterns = [
     path('<int:image_id>/dislike', un_star_image, name="un_star_image"),
     path('<int:image_id>/tag', set_image_tag, name="set_image_tag"),
     path('<int:image_id>/un_tag', remove_image_tag, name="remove_image_tag"),
+    path('<int:image_id>/move', move_image_to_folder, name="move_image_to_folder"),
+    path('search-by-tags', filter_image_by_tag, name="image-filtering-by-tags")
 ]
