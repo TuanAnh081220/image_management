@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'apis.tags',
     'apis.folders',
     'apis.albums',
+    'apis.sharing',
     'rest_framework',
     'django_filters',
     'corsheaders',

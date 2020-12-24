@@ -1,7 +1,7 @@
 from django.db import models
 
 from apis.users.models import Users
-
+from apis.images.models import Images
 
 # Create your models here.
 
@@ -19,3 +19,5 @@ class Folders(models.Model):
 
     class Meta:
         db_table = 'folders'
+
+
