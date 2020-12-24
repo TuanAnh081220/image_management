@@ -1,4 +1,5 @@
 import io
+import os
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
@@ -84,6 +85,7 @@ def upload_image(request):
 @api_view(['GET'])
 #@permission_classes([IsAuthenticated])
 def get_detailed_image(request, image_id):
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'ServiceAccountToken.json'
     image = get_image_by_id(image_id)
     if image is None:
         return HttpResponse(status=status.HTTP_404_NOT_FOUND)
@@ -104,6 +106,12 @@ def get_detailed_image(request, image_id):
     data = serializer.data
     data['tags'] = tag_serializer.data
 
+    image_cloud = vision.Image(content=image)
+
+
+    client = vision.ImageAnnotatorClient()
+    response = client.label_detection(image=image_cloud)
+    data['tag'] = response
     return JsonResponse({
         'image': data
     }, status=status.HTTP_200_OK)
@@ -389,7 +397,7 @@ def move_image_to_folder(request, image_id):
     image.updated_at = datetime.now()
     image.save()
     return JsonResponse({
-        'message': "Image's moved"
+        'message': 'Tag removed'
     }, status=status.HTTP_200_OK)
 
 
