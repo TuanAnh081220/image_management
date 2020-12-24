@@ -179,7 +179,6 @@ def update_folder(request, folder_id):
         'message': 'successfully updated'
     }, status=status.HTTP_200_OK)
 
-
 def check_multiple_ids_request(request):
     serializer = MultiplIDsSerializer(data=request.data)
     if not serializer.is_valid():

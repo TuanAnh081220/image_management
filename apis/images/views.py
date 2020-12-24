@@ -1,4 +1,5 @@
 import io
+import os
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
@@ -15,7 +16,7 @@ from .serializers import UploadImagesSerializer, DetailedImageSerializer, ImageS
 from .models import Images
 from apis.users.views import get_user_from_id
 from apis.tags.serializers import TagSerializer
-
+from google.cloud import vision
 from datetime import datetime
 
 import magic
@@ -82,6 +83,7 @@ def upload_image(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_detailed_image(request, image_id):
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'ServiceAccountToken.json'
     image = get_image_by_id(image_id)
     if image is None:
         return HttpResponse(status=status.HTTP_404_NOT_FOUND)
@@ -102,6 +104,12 @@ def get_detailed_image(request, image_id):
     data = serializer.data
     data['tags'] = tag_serializer.data
 
+    image_cloud = vision.Image(content=image)
+
+
+    client = vision.ImageAnnotatorClient()
+    response = client.label_detection(image=image_cloud)
+    data['tag'] = response
     return JsonResponse({
         'image': data
     }, status=status.HTTP_200_OK)
@@ -405,3 +413,9 @@ def remove_image_tag(request, image_id):
     return JsonResponse({
         'message': 'Tag removed'
     }, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def auto_tagging(request):
+    serializer = ImageSerializer(data=request.data)
+    owner_id = get_user_id_from_jwt(request)
