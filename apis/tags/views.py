@@ -11,8 +11,12 @@ from rest_framework.response import Response
 
 from utils.user import get_user_id_from_jwt
 
-from .serializers import TagSerializer, TagCreateSerializer, TagDetailSerializer, SetImageTagSerializer, TagImageSerializer
+from .serializers import TagSerializer, TagCreateSerializer, TagDetailSerializer, SetImageTagSerializer, \
+    TagImageSerializer, ImageFilteringByTagSerializer
 from .models import Tags, Images_Tags
+from ..images.models import Images
+from ..images.serializers import ImageSerializer, RemoveImageTagSerializer
+from ..images.views import get_image_by_id
 
 
 class TagsList(generics.ListAPIView):
@@ -60,4 +64,84 @@ def tag_create(request):
     return JsonResponse({
         'message': 'Tag existed'
     }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def filter_image_by_tag(request):
+    serializer = ImageFilteringByTagSerializer(data=request.data)
+    if not serializer.is_valid():
+        return JsonResponse({
+            'message': 'Invalid'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    owner_id = get_user_id_from_jwt(request)
+    user_images = Images.objects.filter(owner_id=owner_id)
+    image_list = []
+    for image in user_images:
+        image_list.append(image.id)
+    tag_list = serializer.data['tag_list']
+    for tag_id in tag_list:
+        if Tags.objects.get(id=tag_id).owner_id != owner_id:
+            return JsonResponse({
+                'message': 'Inappropriate tag'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    for tag_id in tag_list:
+        for image_id in image_list:
+            try:
+                Images_Tags.objects.get(tag_id=tag_id, image_id=image_id)
+            except ObjectDoesNotExist:
+                image_list.remove(image_id)
+    filtered_list = []
+    for image_id in image_list:
+        filtered_list. append(Images.objects.get(id=image_id))
+    result = ImageSerializer(filtered_list, many=True)
+    return JsonResponse(result.data, status=status.HTTP_200_OK, safe=False)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def set_image_tag(request, image_id):
+    serializer = SetImageTagSerializer(data=request.data)
+    image = get_image_by_id(image_id)
+    if not serializer.is_valid():
+        return JsonResponse({
+            'message': 'Invalid'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    tag_id = serializer.data['tag_id']
+    try:
+        Tags.objects.get(id=tag_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({
+            'message': 'Tag does not exist'
+        }, status=status.HTTP_404_NOT_FOUND)
+    try:
+        Images_Tags.objects.get(image_id=image_id, tag_id=tag_id)
+    except ObjectDoesNotExist:
+        Images_Tags.objects.create(image=image, tag_id=tag_id)
+        return JsonResponse({
+            'message': 'Tag added'
+        }, status=status.HTTP_200_OK)
+    return JsonResponse({
+        'message': "Image already had this tag"
+    }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def remove_image_tag(request, image_id):
+    serializer = RemoveImageTagSerializer(data=request.data)
+    if not serializer.is_valid():
+        return JsonResponse({
+            'message': 'Invalid'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    tag_id = serializer.data['tag_id']
+    try:
+        Images_Tags.objects.get(image_id=image_id, tag_id=tag_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({
+            'message': "Image doesn't have this tag"
+        }, status=status.HTTP_404_NOT_FOUND)
+    Images_Tags.objects.filter(image_id=image_id, tag_id=tag_id).delete()
+    return JsonResponse({
+        'message': 'Tag removed'
+    }, status=status.HTTP_200_OK)
 
