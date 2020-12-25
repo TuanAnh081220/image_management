@@ -6,6 +6,8 @@ from apis.sharing.models import Shared_Images, Shared_Folders
 
 
 class SharingImageSerializer(serializers.Serializer):
+    select_all = serializers.BooleanField()
+    folder_id = serializers.IntegerField()
     image_id = serializers.ListField(
         child=serializers.IntegerField()
     )
@@ -30,9 +32,7 @@ class SharedImageSerializer(serializers.ModelSerializer):
 
 
 class SharingFolderSerializer(serializers.Serializer):
-    folder_id = serializers.ListField(
-        child=serializers.IntegerField()
-    )
+    folder_id = serializers.IntegerField()
     user_id = serializers.ListField(
         child=serializers.IntegerField()
     )
@@ -43,10 +43,14 @@ class SharedFolderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Shared_Folders
-        fields = ('owner_id', 'folder_title')
+        fields = ('folder_id', 'owner_id', 'folder_title')
 
     def get_owner_id(self, obj):
         return Folders.objects.get(id=obj.folder.id).owner_id
 
     def get_folder_title(self, obj):
         return Folders.objects.get(id=obj.folder.id).title
+
+
+
+

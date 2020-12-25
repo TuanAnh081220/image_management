@@ -3,10 +3,11 @@ from django.http import HttpResponse, JsonResponse
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from utils.user import get_user_id_from_jwt
 from utils.serializers import MultiplIDsSerializer
-from .serializers import FolderSerializer, CreateOrUpdateFolderSerializer
+from .serializers import FolderSerializer, CreateOrUpdateFolderSerializer, FolderDetailSerializer
 from .models import Folders
 from ..users.views import get_user_from_id
 from ..images.models import Images
@@ -54,13 +55,7 @@ def create_folder(request):
     }, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_detailed_folder(request, folder_id):
-    folder, err = find_folder_and_check_permission(request, folder_id)
-    if folder is None:
-        return err
-
+def get_folder_content(folder):
     folder_serializer = FolderSerializer(instance=folder)
 
     sub_folders = Folders.objects.filter(parent_id=folder.id)
@@ -69,11 +64,25 @@ def get_detailed_folder(request, folder_id):
     images = Images.objects.filter(folder_id=folder.id)
     images_serializer = ImageSerializer(instance=images, many=True)
 
-    return JsonResponse({
+    data = {
         'folder': folder_serializer.data,
         'sub_folders': sub_folders_serializer.data,
         'images': images_serializer.data
-    }, status=status.HTTP_200_OK)
+    }
+
+    return data
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_detailed_folder(request, folder_id):
+    folder, err = find_folder_and_check_permission(request, folder_id)
+    if folder is None:
+        return err
+
+    serializer = FolderDetailSerializer(folder, many=False)
+
+    return JsonResponse(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

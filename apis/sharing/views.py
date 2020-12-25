@@ -10,7 +10,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 from apis.folders.models import Folders
+from apis.folders.serializers import FolderDetailSerializer
+from apis.folders.views import get_folder_content
 from apis.images.models import Images
+from apis.images.serializers import DetailedImageSerializer
 from apis.sharing.serializers import SharingImageSerializer, SharedImageSerializer, SharingFolderSerializer, \
     SharedFolderSerializer
 from apis.sharing.models import Shared_Images, Shared_Folders
@@ -27,16 +30,27 @@ def share_image(request):
         return JsonResponse({
             'message': 'Invalid'
         }, status=status.HTTP_400_BAD_REQUEST)
-    image_id_list = serializer.data['image_id']
-    for image_id in image_id_list:
+    user_id_list = serializer.data['user_id']
+    select_all = serializer.data['select_all']
+    if select_all:
+        folder_id = serializer.data['folder_id']
         try:
-            Images.objects.get(id=image_id, owner_id = owner_id)
+            image_list = Images.objects.filter(owner_id=owner_id, folder_id=folder_id)
         except ObjectDoesNotExist:
             return JsonResponse({
-                'message': 'Image not found'
+                'message': 'Images not found'
             }, status=status.HTTP_404_NOT_FOUND)
-
-    user_id_list = serializer.data['user_id']
+    else:
+        image_id_list = serializer.data['image_id']
+        image_list = []
+        for image_id in image_id_list:
+            try:
+                image = Images.objects.get(id=image_id, owner_id = owner_id)
+            except ObjectDoesNotExist:
+                return JsonResponse({
+                    'message': 'Image not found'
+                }, status=status.HTTP_404_NOT_FOUND)
+            image_list.append(image)
     for user_id in user_id_list:
         try:
             Users.objects.get(id=user_id)
@@ -45,10 +59,10 @@ def share_image(request):
                 'message': 'User not found'
             }, status=status.HTTP_404_NOT_FOUND)
     for user_id in user_id_list:
-        for image_id in image_id_list:
+        for image in image_list:
             created_at = datetime.datetime.now()
             updated_at = datetime.datetime.now()
-            Shared_Images.objects.create(image_id=image_id, shared_user_id=user_id,
+            Shared_Images.objects.create(image=image, shared_user_id=user_id,
                                          created_at=created_at, updated_at=updated_at)
     return JsonResponse({
         'message': 'Image shared'
@@ -56,7 +70,7 @@ def share_image(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_shared_image(request):
+def get_all_shared_image(request):
     user_id = get_user_id_from_jwt(request)
     shared_images = Shared_Images.objects.filter(shared_user_id=user_id)
     serializer = SharedImageSerializer(shared_images, many=True)
@@ -72,14 +86,13 @@ def share_folder(request):
         return JsonResponse({
             'message': 'Invalid'
         }, status=status.HTTP_400_BAD_REQUEST)
-    folder_id_list = serializer.data['folder_id']
-    for folder_id in folder_id_list:
-        try:
-            Folders.objects.get(id=folder_id, owner_id = owner_id)
-        except ObjectDoesNotExist:
-            return JsonResponse({
-                'message': 'Folder not found'
-            }, status=status.HTTP_404_NOT_FOUND)
+    folder_id = serializer.data['folder_id']
+    try:
+        Folders.objects.get(id=folder_id, owner_id=owner_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({
+            'message': 'Folder not found'
+        }, status=status.HTTP_404_NOT_FOUND)
 
     user_id_list = serializer.data['user_id']
     for user_id in user_id_list:
@@ -90,11 +103,10 @@ def share_folder(request):
                 'message': 'User not found'
             }, status=status.HTTP_404_NOT_FOUND)
     for user_id in user_id_list:
-        for folder_id in folder_id_list:
-            created_at = datetime.datetime.now()
-            updated_at = datetime.datetime.now()
-            Shared_Folders.objects.create(folder_id=folder_id, shared_user_id=user_id,
-                                         created_at=created_at, updated_at=updated_at)
+        created_at = datetime.datetime.now()
+        updated_at = datetime.datetime.now()
+        Shared_Folders.objects.create(folder_id=folder_id, shared_user_id=user_id,
+                                     created_at=created_at, updated_at=updated_at)
     return JsonResponse({
         'message': 'Folders shared'
     }, status=status.HTTP_200_OK)
@@ -102,8 +114,63 @@ def share_folder(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_shared_folder(request):
+def get_all_shared_folders(request):
     user_id = get_user_id_from_jwt(request)
     shared_folders = Shared_Folders.objects.filter(shared_user_id=user_id)
     serializer = SharedFolderSerializer(shared_folders, many=True)
     return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
+
+def is_accessible(user_id, folder_id):
+    while folder_id != 0:
+        try:
+            Shared_Folders.objects.get(folder_id=folder_id, shared_user_id=user_id)
+        except ObjectDoesNotExist:
+            folder_id = Folders.objects.get(id=folder_id).parent_id
+    return True if folder_id !=0 else False
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_shared_folder_detail(request):
+    user_id = get_user_id_from_jwt(request)
+    shared_id = folder_id = request.data['folder_id']
+    while shared_id != 0:
+        try:
+            Shared_Folders.objects.get(folder_id=shared_id, shared_user_id=user_id)
+        except ObjectDoesNotExist:
+            shared_id = Folders.objects.get(id=shared_id).parent_id
+        else:
+            folder = Folders.objects.get(id=folder_id)
+            serializer = FolderDetailSerializer(folder, many=False)
+            return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+    return JsonResponse({
+        'message': 'Shared folder not found'
+    }, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_shared_image_detail(request):
+    user_id = get_user_id_from_jwt(request)
+    image_id = request.data['image_id']
+    try:
+        image = Images.objects.get(id=image_id)
+    except ObjectDoesNotExist:
+        return JsonResponse({
+            'message': 'Image not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    try:
+        Shared_Images.objects.get(image_id=image_id, shared_user_id=user_id)
+    except ObjectDoesNotExist:
+        folder_id = image.folder_id
+        while folder_id != 0:
+            try:
+                Shared_Folders.objects.get(folder_id=folder_id, shared_user_id=user_id)
+            except ObjectDoesNotExist:
+                folder_id = Folders.objects.get(id=folder_id).parent_id
+            else:
+                serializer = DetailedImageSerializer(image, many=False)
+                return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse({
+            'message': 'Shared image not found'
+        }, status=status.HTTP_404_NOT_FOUND)
+    serializer = DetailedImageSerializer(image, many=False)
+    return JsonResponse(serializer.data, status=status.HTTP_200_OK)

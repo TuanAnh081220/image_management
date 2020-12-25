@@ -12,10 +12,10 @@ from rest_framework.response import Response
 from utils.user import get_user_id_from_jwt
 
 from .serializers import TagSerializer, TagCreateSerializer, TagDetailSerializer, SetImageTagSerializer, \
-    TagImageSerializer, ImageFilteringByTagSerializer
+     ImageFilteringByTagSerializer,  RemoveImageTagSerializer
 from .models import Tags, Images_Tags
 from ..images.models import Images
-from ..images.serializers import ImageSerializer, RemoveImageTagSerializer
+from ..images.serializers import ImageSerializer
 from ..images.views import get_image_by_id
 
 

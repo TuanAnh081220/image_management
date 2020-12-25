@@ -7,11 +7,11 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tags
         fields = ('id', 'name', 'created_at', 'updated_at')
 
-class TagImageSerializer(serializers.ModelSerializer):
-    #img_title = serializers.CharField(source='image.title')
-    class Meta:
-        model = Images_Tags
-        fields = ('image',)
+# class TagImageSerializer(serializers.ModelSerializer):
+#     #img_title = serializers.CharField(source='image.title')
+#     class Meta:
+#         model = Images_Tags
+#         fields = ('image',)
 
 class ImageTagSerializer(serializers.ModelSerializer):
     #tag_name = serializers.CharField(source='tag.name')
@@ -39,6 +39,9 @@ class TagCreateSerializer(serializers.Serializer):
 
 class SetImageTagSerializer(serializers.Serializer):
     #image_id = serializers.IntegerField()
+    tag_id = serializers.IntegerField()
+
+class RemoveImageTagSerializer(serializers.Serializer):
     tag_id = serializers.IntegerField()
 
 class TagRemoveSerializer(serializers.Serializer):
