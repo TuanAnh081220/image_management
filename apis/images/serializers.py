@@ -30,11 +30,15 @@ class TrashImageSerializer(serializers.Serializer):
 #         child=serializers.IntegerField(min_value=0)
 #     )
 
-class RemoveImageTagSerializer(serializers.Serializer):
-    tag_id = serializers.IntegerField()
-
 class MoveImageToFolderSerializer(serializers.Serializer):
-    folder_id = serializers.IntegerField()
+    select_all = serializers.BooleanField()
+    src_folder_id = serializers.IntegerField()
+    dest_folder_id = serializers.IntegerField()
+    image_id = serializers.ListField(
+        child=serializers.IntegerField(min_value=0)
+    )
+
+
 
 class ImageIdSerializer(serializers.ModelSerializer):
     class Meta:

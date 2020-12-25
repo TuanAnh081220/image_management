@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from utils.user import get_user_id_from_jwt
 from utils.serializers import MultiplIDsSerializer
-from .serializers import UploadImagesSerializer, DetailedImageSerializer, ImageSerializer, RemoveImageTagSerializer, \
+from .serializers import UploadImagesSerializer, DetailedImageSerializer, ImageSerializer, \
                         MoveImageToFolderSerializer
 from .models import Images
 from apis.users.views import get_user_from_id
@@ -371,13 +371,8 @@ def test_upload_image_view(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def move_image_to_folder(request, image_id):
-    try:
-        image = Images.objects.get(id=image_id)
-    except ObjectDoesNotExist:
-        return JsonResponse({
-            'message': 'Image not found'
-        }, status=status.HTTP_404_NOT_FOUND)
+def move_image_to_folder(request):
+    user_id = get_user_id_from_jwt(request)
 
     serializer = MoveImageToFolderSerializer(data=request.data)
     if not serializer.is_valid():
@@ -385,19 +380,47 @@ def move_image_to_folder(request, image_id):
             'message': 'Invalid'
         }, status=status.HTTP_400_BAD_REQUEST)
 
-    folder_id = serializer.data['folder_id']
-    if folder_id != 0:
+    dest_folder_id = serializer.data['dest_folder_id']
+    if dest_folder_id != 0:
         try:
-            Folders.objects.get(id=folder_id)
+            Folders.objects.get(id=dest_folder_id, owner_id=user_id)
         except ObjectDoesNotExist:
             return JsonResponse({
-                'message': 'Folder not found'
+                'message': 'Destination folder not found'
             }, status=status.HTTP_404_NOT_FOUND)
-    image.folder_id = folder_id
-    image.updated_at = datetime.now()
-    image.save()
+
+    select_all = serializer.data['select_all']
+    if select_all:
+        src_folder_id = serializer.data['src_folder_id']
+        if src_folder_id != 0:
+            try:
+                Folders.objects.get(id=src_folder_id, owner_id=user_id)
+            except ObjectDoesNotExist:
+                return JsonResponse({
+                    'message': 'Source folder not found'
+                }, status=status.HTTP_404_NOT_FOUND)
+        try:
+            images = Images.objects.filter(folder_id=src_folder_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'message': 'No images selected'
+            }, status=status.HTTP_404_NOT_FOUND)
+    else:
+        images = []
+        image_id = serializer.data['image_id']
+        for id in image_id:
+            try:
+                images.append(Images.objects.get(id=id))
+            except ObjectDoesNotExist:
+                return JsonResponse({
+                    'message': 'Image not found'
+                }, status=status.HTTP_404_NOT_FOUND)
+    for image in images:
+        image.folder_id = dest_folder_id
+        image.updated_at = datetime.now()
+        image.save()
     return JsonResponse({
-        'message': 'Tag removed'
+        'message': 'Image moved'
     }, status=status.HTTP_200_OK)
 
 
