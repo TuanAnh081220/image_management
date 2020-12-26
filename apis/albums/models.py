@@ -19,7 +19,7 @@ class Albums(models.Model):
 
 class AlbumsHaveImages(models.Model):
     album = models.ForeignKey(Albums, on_delete=models.CASCADE)
-    image = models.ForeignKey(Images, on_delete=models.CASCADE, primary_key=True)
+    image = models.ForeignKey(Images, on_delete=models.CASCADE)
     
     class Meta:
         db_table = "albums_have_images"

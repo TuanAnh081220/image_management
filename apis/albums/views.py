@@ -19,65 +19,61 @@ from .serializer import AlbumsSerializer, DetailedAlbumSerializer, UpdateOrCreat
 from apis.images.serializers import ImageIdSerializer, ThumbnailPathImageSerializer, ImageSerializer
 
 
-# class AlbumsList(generics.ListAPIView):
+class AlbumsList(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = AlbumsSerializer()
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    filterset_fields = ['star']
+    search_fields = ['title', "created_at"]
+    ordering_fields = ['title', 'updated_at', 'created_at']
+
+    def get_queryset(self):
+        user_id = get_user_id_from_jwt(self.request)
+        return Albums.objects.filter(owner=user_id)
+
 #
-#     images = Images.objects.all().order_by('-id')[:3:1]
-#     permission_classes = [IsAuthenticated]
-#     data = {"album": AlbumsSerializer}
-#     for image in images:
-#         data[image.title] = ThumbnailPathImageSerializer(instance=image)
-#     serializer_class = json.dumps(data)
-#     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-#     # order_backends = [filters.OrderingFilter]
-#     filterset_fields = ['star']
-#     search_fields = ['title', "created_at"]
-#     ordering_fields = ['title', 'updated_at', 'created_at']
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def list_album(request):
+#     owner_id = get_user_id_from_jwt(request)
+#     data_albums = {}
+#     try:
+#         # albums = Albums.objects.all().filter(owner_id=owner_id).order_by('-created_at')
+#         albums = Albums.objects.filter(owner_id=owner_id)
+#         for album in albums:
+#             data_images = []
+#             try:
+#                 album_id = AlbumsSerializer(instance=album).data['id']
+#                 images = Images.objects.all().raw(
+#                     "SELECT id FROM images WHERE id IN (SELECT image_id FROM albums_have_images WHERE album_id = {}) LIMIT 3".format(
+#                         album_id))
 #
-#     def get_queryset(self):
-#         user_id = get_user_id_from_jwt(self.request)
-#         return Albums.objects.filter(owner=user_id)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def list_album(request):
-    owner_id = get_user_id_from_jwt(request)
-    data_albums = {}
-    try:
-        # albums = Albums.objects.all().filter(owner_id=owner_id).order_by('-created_at')
-        albums = Albums.objects.filter(owner_id=owner_id)
-        for album in albums:
-            data_images = []
-            try:
-                album_id = AlbumsSerializer(instance=album).data['id']
-                images = Images.objects.all().raw(
-                    "SELECT id FROM images WHERE id IN (SELECT image_id FROM albums_have_images WHERE album_id = {}) LIMIT 3".format(
-                        album_id))
-
-                serializer = AlbumsSerializer(instance=album)
-                user_id = get_user_id_from_jwt(request)
-
-                for image in images:
-                    if not is_owner(image.owner.id, user_id):
-                        return JsonResponse({
-                            "message": "permission denied"
-                        }, status=status.HTTP_403_FORBIDDEN)
-                data_albums[album.title] = serializer.data
-                for image in images:
-                    data_images.append(
-                        ImageSerializer(instance=image).data['thumbnail_path'])
-            except ObjectDoesNotExist:
-                return JsonResponse({
-                    "message": "image not found"
-                }, status=status.HTTP_404_NOT_FOUND)
-            data_albums[album.title]['images'] = data_images
-    except ObjectDoesNotExist:
-        return JsonResponse({
-            "message": "album not found"
-        }, status=status.HTTP_404_NOT_FOUND)
-
-    return JsonResponse({
-        "album": json.loads(json.dumps(data_albums))
-    }, status=status.HTTP_200_OK)
+#                 serializer = AlbumsSerializer(instance=album)
+#                 user_id = get_user_id_from_jwt(request)
+#
+#                 for image in images:
+#                     if not is_owner(image.owner.id, user_id):
+#                         return JsonResponse({
+#                             "message": "permission denied"
+#                         }, status=status.HTTP_403_FORBIDDEN)
+#                 data_albums[album.title] = serializer.data
+#                 for image in images:
+#                     data_images.append(
+#                         ImageSerializer(instance=image).data['thumbnail_path'])
+#             except ObjectDoesNotExist:
+#                 return JsonResponse({
+#                     "message": "image not found"
+#                 }, status=status.HTTP_404_NOT_FOUND)
+#             data_albums[album.title]['images'] = data_images
+#     except ObjectDoesNotExist:
+#         return JsonResponse({
+#             "message": "album not found"
+#         }, status=status.HTTP_404_NOT_FOUND)
+#
+#     return JsonResponse({
+#         "album": json.loads(json.dumps(data_albums))
+#     }, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
