@@ -55,24 +55,6 @@ def create_folder(request):
     }, status=status.HTTP_200_OK)
 
 
-def get_folder_content(folder):
-    folder_serializer = FolderSerializer(instance=folder)
-
-    sub_folders = Folders.objects.filter(parent_id=folder.id)
-    sub_folders_serializer = FolderSerializer(instance=sub_folders, many=True)
-
-    images = Images.objects.filter(folder_id=folder.id)
-    images_serializer = ImageSerializer(instance=images, many=True)
-
-    data = {
-        'folder': folder_serializer.data,
-        'sub_folders': sub_folders_serializer.data,
-        'images': images_serializer.data
-    }
-
-    return data
-
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_detailed_folder(request, folder_id):

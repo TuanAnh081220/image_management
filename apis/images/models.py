@@ -2,12 +2,19 @@ from django.db import models
 
 from apis.users.models import Users
 
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFill
+
+
 # Create your models here.
 
 class Images(models.Model):
     title = models.CharField(max_length=45, null=False)
-    path = models.CharField(max_length=2000, null=False)
-    thumbnail_path = models.CharField(max_length=2000, null=False)
+    image = models.ImageField(null=False)
+    thumbnail = ImageSpecField(source='image',
+                               processors=[ResizeToFill(50, 50)],
+                               format='JPEG',
+                               options={'quality': 60})
     owner = models.ForeignKey(Users, on_delete=models.CASCADE, null=False)
     folder_id = models.IntegerField()
     star = models.BooleanField(default=False, null=False)

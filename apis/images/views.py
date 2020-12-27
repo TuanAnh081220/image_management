@@ -12,7 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from utils.user import get_user_id_from_jwt
 from utils.serializers import MultiplIDsSerializer
-from .serializers import UploadImagesSerializer, DetailedImageSerializer, ImageSerializer, \
+from .serializers import UploadImagesSerializer, DetailedImageSerializer, \
                         MoveImageToFolderSerializer
 from .models import Images
 from apis.users.views import get_user_from_id
@@ -28,7 +28,7 @@ from ..tags.models import Tags
 
 
 class ImagesList(generics.ListAPIView):
-    serializer_class = ImageSerializer
+    serializer_class = DetailedImageSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['star']
@@ -61,18 +61,12 @@ def upload_image(request):
             'message': 'no owner found'
         }, status=status.HTTP_403_FORBIDDEN)
 
-    fs = FileSystemStorage()
     for img in request.FILES.getlist('images'):
         title = img.name
-        if is_image_title_duplicate(owner_id, title):
-            title = title + "_duplicate"
-        img_name = fs.save(title, img)
-        img_url = fs.url(img_name)
         new_img = Images.objects.create(
             owner=owner,
             folder_id=folder_id,
-            path=img_url,
-            thumbnail_path=img_url,
+            image=img,
             size=img.size,
             title=title
         )

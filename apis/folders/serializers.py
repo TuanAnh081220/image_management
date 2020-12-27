@@ -34,12 +34,12 @@ class FolderDetailSerializer(serializers.ModelSerializer):
     def get_images(self, obj):
         images = Images.objects.filter(folder_id=obj.id)
         data = []
-        for image in images:
+        for img in images:
             item = {
-                'id': image.id,
-                'title': image.title,
-                'path': image.path,
-                'thumbnail_path': image.thumbnail_path
+                'id': img.id,
+                'title': img.title,
+                'image': img.image,
+                'thumbnail': img.thumbnail
             }
             data.append(item)
         return data
