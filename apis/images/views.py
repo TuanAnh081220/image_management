@@ -2,6 +2,7 @@ import io
 import os
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models.deletion import ProtectedError
 from django.http import JsonResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
 from django_filters.rest_framework import DjangoFilterBackend
@@ -13,7 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from utils.user import get_user_id_from_jwt
 from utils.serializers import MultiplIDsSerializer
 from .serializers import UploadImagesSerializer, DetailedImageSerializer, \
-                        MoveImageToFolderSerializer
+                        MoveImageToFolderSerializer, MultipleImageIDsSerializer
 from .models import Images
 from apis.users.views import get_user_from_id
 from apis.tags.serializers import TagSerializer
@@ -24,8 +25,9 @@ from datetime import datetime
 
 import magic
 
-from ..tags.models import Tags
-
+from ..sharing.models import Shared_Images
+from ..tags.models import Tags, Images_Tags
+from ..albums.models import Albums_Images
 
 class ImagesList(generics.ListAPIView):
     serializer_class = DetailedImageSerializer
@@ -218,7 +220,29 @@ def delete_image(request, image_id):
         return JsonResponse({
             'message': "permission denied"
         }, status=status.HTTP_403_FORBIDDEN)
-    image.delete()
+    # image.delete()
+    try:
+        Albums_Images.objects.get(image_id=image.id).delete()
+        # message = "Successfully"
+    except ObjectDoesNotExist:
+        print("This image {} does not exist in album!".format(image.id))
+    try:
+        Images_Tags.objects.get(image_id=image.id).delete()
+        # message = "Successfully"
+    except ObjectDoesNotExist:
+        print("This image {} does not have tag!".format(image.id))
+    try:
+        Shared_Images.objects.get(image_id=image.id).delete()
+        # message = "Successfully"
+    except ObjectDoesNotExist:
+        print("This image {} is not shared!".format(image.id))
+    try:
+        image.delete()
+        # message = "Successfully"
+    except ObjectDoesNotExist:
+        print("This image {} does not exist!".format(image.id))
+    except ProtectedError:
+        print("This image {} can't be deleted!!".format(image.id))
     return HttpResponse(status=status.HTTP_200_OK)
 
 
@@ -239,7 +263,28 @@ def delete_multiple_image(request):
             return JsonResponse({
                 'message': "permission denied for image id {}".format(image_id)
             }, status=status.HTTP_403_FORBIDDEN)
-        image.delete()
+        try:
+            Albums_Images.objects.get(image_id=image.id).delete()
+            # message = "Successfully"
+        except ObjectDoesNotExist:
+            print("This image {} does not exist in album!".format(image.id))
+        try:
+            Images_Tags.objects.get(image_id=image.id).delete()
+            # message = "Successfully"
+        except ObjectDoesNotExist:
+            print("This image {} does not have tag!".format(image.id))
+        try:
+            Shared_Images.objects.get(image_id=image.id).delete()
+            # message = "Successfully"
+        except ObjectDoesNotExist:
+            print("This image {} is not shared!".format(image.id))
+        try:
+            image.delete()
+            # message = "Successfully"
+        except ObjectDoesNotExist:
+            print("This image {} does not exist!".format(image.id))
+        except ProtectedError:
+            print("This image {} can't be deleted!!".format(image.id))
     return HttpResponse(status=status.HTTP_200_OK)
 
 
