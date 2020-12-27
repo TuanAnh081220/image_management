@@ -11,12 +11,12 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('folders', '0001_initial'),
+        ('albums', '0002_albumshaveimages_image'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='folders',
+            model_name='albums',
             name='owner',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
         ),

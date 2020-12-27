@@ -11,7 +11,7 @@ class DetailedImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Images
-        fields = ('id', 'title', 'path', 'owner_id', 'folder_id', 'star', 'size', 'is_trashed')
+        fields = '__all__'
 
 
 class ImageSerializer(serializers.ModelSerializer):
