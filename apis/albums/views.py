@@ -16,7 +16,7 @@ from datetime import datetime
 
 from .serializer import AlbumsSerializer, DetailedAlbumSerializer, UpdateOrCreateAlbumSerializer, \
     SelectImages, ListImageInAlbum, DeleteImageFromAlbum
-from apis.images.serializers import ImageIdSerializer, ThumbnailPathImageSerializer, ImageSerializer, DetailedImageSerializer
+from apis.images.serializers import ImageIdSerializer, ImageSerializer, DetailedImageSerializer
 
 
 # class AlbumsList(generics.ListAPIView):
@@ -63,7 +63,7 @@ def list_album(request):
                 data_images['info'] = data_for_album
                 if len(images) > 0:
                     for image in images:
-                        data_images['thumbnail'] = DetailedImageSerializer(instance=image).data['path']
+                        data_images['thumbnail'] = DetailedImageSerializer(instance=image).data['image']
                 else:
                     data_images['thumbnail'] = ''
             except ObjectDoesNotExist:
@@ -289,6 +289,7 @@ def get_detailed_album(request, album_id):
     image_id_serializer = ImageIdSerializer(image, many=True)
 
     data = serializer.data
+    data['total_images'] = len(image)
     data['images'] = image_id_serializer.data
 
     return JsonResponse({
