@@ -6,7 +6,7 @@ from apis.images.models import Images
 class AlbumsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Albums
-        fields = ('id', 'title', 'star', 'owner_id')
+        fields = ('id', 'title', 'star', 'owner_id', 'created_at')
 
     def get_images(self, obj):
         images = AlbumsHaveImages.objects.filter(album_id=obj.id)

@@ -2,6 +2,7 @@ from django.db import models
 from apis.users.models import Users
 from apis.images.models import Images
 
+
 # Create your models here.
 class Albums(models.Model):
     title = models.CharField(max_length=45, null=False)
@@ -17,9 +18,10 @@ class Albums(models.Model):
         db_table = "albums"
         ordering = ['title', 'updated_at', 'created_at']
 
+
 class AlbumsHaveImages(models.Model):
     album = models.ForeignKey(Albums, on_delete=models.CASCADE)
     image = models.ForeignKey(Images, on_delete=models.CASCADE)
-    
+
     class Meta:
         db_table = "albums_have_images"
