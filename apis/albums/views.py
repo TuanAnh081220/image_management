@@ -46,7 +46,7 @@ def list_album(request):
             try:
                 album_id = AlbumsSerializer(instance=album).data['id']
                 images = Images.objects.all().raw(
-                    "SELECT id FROM images WHERE id IN (SELECT image_id FROM albums_have_images WHERE album_id = {}) LIMIT 1".format(
+                    "SELECT id FROM images WHERE id IN (SELECT image_id FROM albums_have_images WHERE album_id = {})".format(
                         album_id))
 
                 serializer = AlbumsSerializer(instance=album)
@@ -57,12 +57,10 @@ def list_album(request):
                         return JsonResponse({
                             "message": "permission denied"
                         }, status=status.HTTP_403_FORBIDDEN)
+                    break
                 data_for_album = serializer.data
                 data_for_album["total_images"] = len(images)
                 data_images['info'] = data_for_album
-
-                # data_albums[album.title] = serializer.data
-                images_ = []
                 if len(images) > 0:
                     for image in images:
                         data_images['thumbnail'] = DetailedImageSerializer(instance=image).data['path']
@@ -74,7 +72,6 @@ def list_album(request):
                 }, status=status.HTTP_404_NOT_FOUND)
             # print(data_albums[0])
             data_albums.append(data_images)
-            # data_albums[album.title]['images'] = data_images
     except ObjectDoesNotExist:
         return JsonResponse({
             "message": "album not found"
