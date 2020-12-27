@@ -14,7 +14,7 @@ from utils.user import get_user_id_from_jwt
 
 
 class UsersViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated]
     queryset = Users.objects.all()
     serializer_class = UserSerializer
     filter_backends = [DjangoFilterBackend]
