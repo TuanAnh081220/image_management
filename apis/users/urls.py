@@ -2,7 +2,7 @@ from django.urls import path
 from .views import UsersViewSet, example_view, get_detailed_user, update_detailed_user, verify_user, block_user, un_block_user
 
 urlpatterns = [
-    path('', UsersViewSet.as_view({'get': 'list'}), name="users_view_and_retrieve"),
+    path('list', UsersViewSet.as_view({'get': 'list'}), name="users_view_and_retrieve"),
     path('<int:pk>', UsersViewSet.as_view({'get': 'retrieve'}), name="retrieve user"),
     path('example', example_view, name="example_view"),
     path('me', get_detailed_user, name="get_detailed_user"),

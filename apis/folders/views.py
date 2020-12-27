@@ -22,7 +22,16 @@ class FoldersList(generics.ListAPIView):
 
     def get_queryset(self):
         user_id = get_user_id_from_jwt(self.request)
-        return Folders.objects.filter(owner_id=user_id, parent_id=0).order_by('-updated_at')
+        return Folders.objects.filter(owner_id=user_id, parent_id=0, is_trashed=False).order_by('-updated_at')
+
+
+class FoldersListTrash(generics.ListAPIView):
+    serializer_class = FolderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user_id = get_user_id_from_jwt(self.request)
+        return Folders.objects.filter(owner_id=user_id, parent_id=0, is_trashed=True).order_by('-updated_at')
 
 
 @api_view(['GET'])
@@ -178,6 +187,7 @@ def update_folder(request, folder_id):
     return JsonResponse({
         'message': 'successfully updated'
     }, status=status.HTTP_200_OK)
+
 
 def check_multiple_ids_request(request):
     serializer = MultiplIDsSerializer(data=request.data)

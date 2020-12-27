@@ -13,7 +13,7 @@ from .views import test_upload_image_view, ImagesList, upload_image, \
 from ..tags.views import filter_image_by_tag, set_image_tag, remove_image_tag
 
 urlpatterns = [
-    path('', ImagesList.as_view(), name="list_images"),
+    path('list', ImagesList.as_view(), name="list_images"),
     path('upload', upload_image, name="test_upload_image_view"),
     path('<int:image_id>/detail', get_detailed_image, name="get_detailed_image"),
     path('<int:image_id>/trash', trash_image, name="trash_image"),

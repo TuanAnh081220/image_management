@@ -7,7 +7,7 @@ from .models import Users, PendingUsers
 class UserSerializer(ModelSerializer):
     class Meta:
         model = Users
-        fields = ('user_name', 'email', 'is_admin', 'is_blocked', 'last_login')
+        fields = ('id', 'user_name', 'email', 'is_admin', 'is_blocked', 'last_login')
 
 
 class DetailedUserSerializer(ModelSerializer):

@@ -7,7 +7,7 @@ from ..images.models import Images
 class FolderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Folders
-        fields = ('id', 'title', 'owner_id', 'parent_id')
+        fields = ('id', 'title', 'owner_id', 'parent_id', 'created_at')
 
 
 class CreateOrUpdateFolderSerializer(serializers.Serializer):

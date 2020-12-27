@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import FoldersList, \
+from .views import FoldersListTrash, FoldersList, \
     create_folder, \
     get_detailed_folder, \
     trash_folder, \
@@ -12,7 +12,8 @@ from .views import FoldersList, \
     delete_multiple_folder, get_folder_list
 
 urlpatterns = [
-    path('', get_folder_list, name="list_folders"),
+    path('list', FoldersList.as_view(), name="list_folders"),
+    path('list/trash', FoldersListTrash.as_view(), name="list_folders"),
     path('create', create_folder, name="create_folder"),
     path('<int:folder_id>/detail', get_detailed_folder, name="get_detailed_folder"),
     path('<int:folder_id>/trash', trash_folder, name="trash_folder"),

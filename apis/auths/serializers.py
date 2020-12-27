@@ -6,7 +6,7 @@ from apis.users.models import Users, PendingUsers
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PendingUsers
+        model = Users
         fields = ('user_name', 'email', 'password')
         extra_kwargs = {'password': {'write_only': True}}
 
