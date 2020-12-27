@@ -17,7 +17,7 @@ def trash_image():
     print("execute here")
     message = ""
     for image in images:
-        days_difference = now - image.trashed_at
+        days_difference = now.date() - image.trashed_at.date()
         if days_difference.days > TRASH_TIME:
             try:
                 Albums_Images.objects.filter(image_id=image.id).delete()
@@ -35,7 +35,9 @@ def trash_image():
             except ObjectDoesNotExist:
                 print("This image {} is not shared!".format(image.id))
             try:
+                img = image.image
                 image.delete()
+                img.delete()
                 # message = "Successfully"
             except ObjectDoesNotExist:
                 print("This image {} does not exist!".format(image.id))
