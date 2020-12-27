@@ -16,7 +16,7 @@ class Users(AbstractUser, models.Model):
     email = models.CharField(max_length=45, unique=True, null=False)
     password = models.CharField(max_length=45, null=False)
     is_admin = models.BooleanField(default=False, null=False)
-    avatar_url = models.CharField(max_length=2000)
+    avatar = models.ImageField(upload_to='profile_picture', null=True)
     is_blocked = models.BooleanField(default=False, null=False)
     last_login = models.DateTimeField(auto_now_add=True, null=False)
     created_at = models.DateTimeField(auto_now_add=True, null=False)

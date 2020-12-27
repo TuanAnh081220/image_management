@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Images
-
+from ..tags.models import Images_Tags, Tags
 
 
 class UploadImagesSerializer(serializers.Serializer):
@@ -10,6 +10,7 @@ class UploadImagesSerializer(serializers.Serializer):
 class DetailedImageSerializer(serializers.ModelSerializer):
     thumbnail_size = serializers.SerializerMethodField()
     image_size = serializers.SerializerMethodField()
+    tags = serializers.SerializerMethodField()
 
     class Meta:
         model = Images
@@ -29,12 +30,29 @@ class DetailedImageSerializer(serializers.ModelSerializer):
         }
         return data
 
+    def get_tags(self, obj):
+        images_tags = Images_Tags.objects.filter(image_id=obj.id)
+        data = []
+        for pair in images_tags:
+            item = {
+                'tag_id': pair.tag_id,
+                'tag_name': Tags.objects.get(id=pair.tag_id).name
+            }
+            data.append(item)
+        return data
+
+
+
 
 class ImageSerializer(serializers.ModelSerializer):
+    thumbnail_path = serializers.SerializerMethodField()
 
     class Meta:
         model = Images
-        fields = ('id', 'title', 'thumbnail', 'owner_id', 'folder_id', 'star', 'size')
+        fields = ('id', 'title', 'image', 'owner_id', 'star', 'size', 'thumbnail_path')
+
+    def get_thumbnail_path(self, obj):
+        return obj.thumbnail.url
 
 
 class TrashImageSerializer(serializers.Serializer):
