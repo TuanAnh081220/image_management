@@ -18,7 +18,7 @@ class ImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Images
-        fields = ('id', 'title', 'thumbnail_path', 'owner_id', 'folder_id', 'star', 'size')
+        fields = ('id', 'title', 'thumbnail', 'owner_id', 'folder_id', 'star', 'size')
 
 
 class TrashImageSerializer(serializers.Serializer):
@@ -43,9 +43,9 @@ class MoveImageToFolderSerializer(serializers.Serializer):
 class ImageIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Images
-        fields = ('id', 'title', 'thumbnail_path',)
+        fields = ('id', 'title', 'image',)
 
-class ThumbnailPathImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Images
-        fields = ('thumbnail_path', )
+# class ThumbnailPathImageSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Images
+#         fields = ('thumbnail_path', )
