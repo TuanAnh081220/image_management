@@ -29,9 +29,9 @@ class FoldersList(generics.ListAPIView):
 @permission_classes([IsAuthenticated])
 def get_folder_list(request):
     user_id = get_user_id_from_jwt(request)
-    folders = Folders.objects.get(owner_id=user_id)
+    folders = Folders.objects.filter(owner_id=user_id, parent_id=0).order_by('-updated_at')
     serializer = FolderDetailSerializer(folders, many=True)
-    return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+    return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
 
 
 @api_view(['POST'])

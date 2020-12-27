@@ -38,8 +38,8 @@ class FolderDetailSerializer(serializers.ModelSerializer):
             item = {
                 'id': img.id,
                 'title': img.title,
-                'image': img.image,
-                'thumbnail': img.thumbnail
+                'image': img.image.url,
+                'thumbnail': img.thumbnail.url
             }
             data.append(item)
         return data
