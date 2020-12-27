@@ -15,32 +15,31 @@ def trash_image():
     except ObjectDoesNotExist:
         print("there are not any trashed images")
     print("execute here")
+    message = ""
     for image in images:
         days_difference = now - image.trashed_at
         if days_difference.days > TRASH_TIME:
             try:
                 Albums_Images.objects.get(image_id=image.id).delete()
-                message = "Successfully"
+                # message = "Successfully"
             except ObjectDoesNotExist:
-                message = ("This image {} does not exist in album!".format(image.id))
+                print("This image {} does not exist in album!".format(image.id))
             try:
                 Images_Tags.objects.get(image_id=image.id).delete()
-                message = "Successfully"
+                # message = "Successfully"
             except ObjectDoesNotExist:
-                message = ("This image {} does not have tag!".format(image.id))
+                print("This image {} does not have tag!".format(image.id))
             try:
                 Shared_Images.objects.get(image_id=image.id).delete()
-                message = "Successfully"
+                # message = "Successfully"
             except ObjectDoesNotExist:
-                message = ("This image {} is not shared!".format(image.id))
+                print("This image {} is not shared!".format(image.id))
             try:
                 image.delete()
-                message = "Successfully"
+                # message = "Successfully"
             except ObjectDoesNotExist:
-                message = ("This image {} does not exist!".format(image.id))
+                print("This image {} does not exist!".format(image.id))
             except ProtectedError:
-                message =  "This image {} can't be deleted!!".format(image.id)
+                print("This image {} can't be deleted!!".format(image.id))
 
-    return JsonResponse({
-        "message": message
-    })
+    print("Successfully")

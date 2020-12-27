@@ -25,10 +25,10 @@ class TrashImageSerializer(serializers.Serializer):
     status = serializers.BooleanField()
 
 
-# class MultipleImageIDsSerializer(serializers.Serializer):
-#     ids = serializers.ListField(
-#         child=serializers.IntegerField(min_value=0)
-#     )
+class MultipleImageIDsSerializer(serializers.Serializer):
+    ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=0)
+    )
 
 class MoveImageToFolderSerializer(serializers.Serializer):
     select_all = serializers.BooleanField()
