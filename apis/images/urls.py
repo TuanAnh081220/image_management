@@ -10,7 +10,8 @@ from .views import test_upload_image_view, ImagesList, upload_image, \
     star_image, \
     un_star_image, \
     move_image_to_folder, \
-    add_multiple_images_to_multiple_albums
+    add_multiple_images_to_multiple_albums, \
+    download_image
 from ..tags.views import filter_image_by_tag, set_image_tag, remove_image_tag
 
 urlpatterns = [
@@ -28,5 +29,6 @@ urlpatterns = [
     path('<int:image_id>/un_tag', remove_image_tag, name="remove_image_tag"),
     path('move', move_image_to_folder, name="move_image_to_folder"),
     path('search-by-tags', filter_image_by_tag, name="image-filtering-by-tags"),
-    path('add-to-albums', add_multiple_images_to_multiple_albums, name="add_multiple_images_to_multiple_albums")
+    path('add-to-albums', add_multiple_images_to_multiple_albums, name="add_multiple_images_to_multiple_albums"),
+    path('<int:image_id>/download', download_image, name='download_image')
 ]

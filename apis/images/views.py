@@ -14,13 +14,14 @@ from rest_framework.permissions import IsAuthenticated
 from utils.user import get_user_id_from_jwt
 from utils.serializers import MultiplIDsSerializer
 from .serializers import UploadImagesSerializer, DetailedImageSerializer, \
-                        MoveImageToFolderSerializer, MultipleImageIDsSerializer
+    MoveImageToFolderSerializer, MultipleImageIDsSerializer
 from ..albums.serializer import AddMultipleImagesToMultipleAlbumsSerializer
 from .models import Images
 from apis.users.views import get_user_from_id
 from apis.tags.serializers import TagSerializer
 from apis.folders.models import Folders
 from apis.users.models import Users
+import urllib.request
 
 from datetime import datetime
 
@@ -29,6 +30,8 @@ import magic
 from ..sharing.models import Shared_Images
 from ..tags.models import Tags, Images_Tags
 from ..albums.models import Albums_Images, Albums
+from wsgiref.util import FileWrapper
+import mimetypes
 
 
 class ImagesList(generics.ListAPIView):
@@ -578,3 +581,36 @@ def add_multiple_images_to_multiple_albums(request):
     return JsonResponse({
         "message": "successfully"
     })
+
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def download_image(request, image_id):
+    # image_id = request.data['image_id']
+    img = Images.objects.get(id=image_id)
+    # # try:
+    # #     urllib.request.urlretrieve("http://127.0.0.1:8080" + str(img.image.url), str(img.image.url))
+    # #     return JsonResponse({
+    # #         "message" : "success"
+    # #     })
+    # # except FileNotFoundError:
+    # #     return JsonResponse({
+    # #         "message": "File not found"
+    # #     })
+    # wrapper = FileWrapper(open(img.image.path, encoding='utf-8'))  # img.file returns full path to the image
+    # print(wrapper)
+    # content_type = mimetypes.guess_type(img.image.path)[0]  # Use mimetypes to get file type
+    # print(content_type)
+    # # response = HttpResponse(wrapper, content_type=content_type)
+    # # print(response)
+    # # response['Content-Length'] = os.path.getsize(img.image)
+    # # response['Content-Disposition'] = "attachment; filename*=UTF-8''%s" % img.name
+    # # return response
+    # response = HttpResponse(wrapper, content_type='application/zip')
+    # response['Content-Disposition'] = 'attachment; filename=myfile.zip'
+    # return response
+    image = img.image.name.split('/')[-1]
+    response = HttpResponse(img.image, content_type='image/png')
+    response['Content-Disposition'] = 'attachment; filename=%s' % image
+
+    return response
