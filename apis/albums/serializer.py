@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Albums, AlbumsHaveImages
+from .models import Albums, Albums_Images
 from apis.images.models import Images
 
 
@@ -9,7 +9,7 @@ class AlbumsSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'star', 'owner_id', 'created_at')
 
     def get_images(self, obj):
-        images = AlbumsHaveImages.objects.filter(album_id=obj.id)
+        images = Albums_Images.objects.filter(album_id=obj.id)
         data = []
         for image in images:
             item = {

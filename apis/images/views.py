@@ -83,9 +83,38 @@ def upload_image(request):
 
 
 @api_view(['GET'])
-#@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def get_detailed_image(request, image_id):
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'ServiceAccountToken.json'
+    # os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'ServiceAccountToken.json'
+    # image = get_image_by_id(image_id)
+    # if image is None:
+    #     return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+    #
+    # user_id = get_user_id_from_jwt(request)
+    #
+    # if not is_owner(image.owner.id, user_id):
+    #     return JsonResponse({
+    #         'message': "permission denied"
+    #     }, status=status.HTTP_403_FORBIDDEN)
+    #
+    # serializer = DetailedImageSerializer(instance=image)
+    #
+    # tag = Tags.objects.raw("select id from tags where id in (select tag_id from images_tags where image_id = 1)")
+    #
+    # tag_serializer = TagSerializer(tag, many=True)
+    #
+    # data = serializer.data
+    # data['tags'] = tag_serializer.data
+    #
+    # # image_cloud = vision.Image(content=image)
+    #
+    #
+    # # client = vision.ImageAnnotatorClient()
+    # # response = client.label_detection(image=image_cloud)
+    # # data['tag'] = response
+    # return JsonResponse({
+    #     'image': data
+    # }, status=status.HTTP_200_OK)
     image = get_image_by_id(image_id)
     if image is None:
         return HttpResponse(status=status.HTTP_404_NOT_FOUND)
@@ -98,22 +127,8 @@ def get_detailed_image(request, image_id):
         }, status=status.HTTP_403_FORBIDDEN)
 
     serializer = DetailedImageSerializer(instance=image)
-
-    tag = Tags.objects.raw("select id from tags where id in (select tag_id from images_tags where image_id = 1)")
-
-    tag_serializer = TagSerializer(tag, many=True)
-
-    data = serializer.data
-    data['tags'] = tag_serializer.data
-
-    image_cloud = vision.Image(content=image)
-
-
-    client = vision.ImageAnnotatorClient()
-    response = client.label_detection(image=image_cloud)
-    data['tag'] = response
     return JsonResponse({
-        'image': data
+        'image': serializer.data
     }, status=status.HTTP_200_OK)
 
 
@@ -135,7 +150,7 @@ def trash_image(request, image_id):
     return JsonResponse({
         'image_id': image.id,
         'is_trashed': image.is_trashed
-    }, status=status.HTTP_400_BAD_REQUEST)
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
