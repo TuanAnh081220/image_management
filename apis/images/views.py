@@ -257,6 +257,7 @@ def delete_multiple_image(request):
         print("something")
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
     image_ids = serializer.data['ids']
+
     for image_id in image_ids:
         image = get_image_by_id(image_id)
         if image is None:
@@ -266,17 +267,17 @@ def delete_multiple_image(request):
                 'message': "permission denied for image id {}".format(image_id)
             }, status=status.HTTP_403_FORBIDDEN)
         try:
-            Albums_Images.objects.get(image_id=image.id).delete()
+            Albums_Images.objects.filter(image_id=image_id).delete()
             # message = "Successfully"
         except ObjectDoesNotExist:
             print("This image {} does not exist in album!".format(image.id))
         try:
-            Images_Tags.objects.get(image_id=image.id).delete()
+            Images_Tags.objects.filter(image_id=image_id).delete()
             # message = "Successfully"
         except ObjectDoesNotExist:
             print("This image {} does not have tag!".format(image.id))
         try:
-            Shared_Images.objects.get(image_id=image.id).delete()
+            Shared_Images.objects.filter(image_id=image_id).delete()
             # message = "Successfully"
         except ObjectDoesNotExist:
             print("This image {} is not shared!".format(image.id))
