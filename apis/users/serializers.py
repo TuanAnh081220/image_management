@@ -13,7 +13,7 @@ class UserSerializer(ModelSerializer):
 class DetailedUserSerializer(ModelSerializer):
     class Meta:
         model = Users
-        fields = ('user_name', 'email', 'password', 'avatar_url', 'last_login')
+        fields = ('user_name', 'email', 'password', 'avatar', 'last_login')
 
 
 class PendingUserSerializer(ModelSerializer):

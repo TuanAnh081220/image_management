@@ -2,6 +2,7 @@ import io
 import os
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models.deletion import ProtectedError
 from django.http import JsonResponse, HttpResponse
 from django.core.files.storage import FileSystemStorage
 from django_filters.rest_framework import DjangoFilterBackend
@@ -13,7 +14,8 @@ from rest_framework.permissions import IsAuthenticated
 from utils.user import get_user_id_from_jwt
 from utils.serializers import MultiplIDsSerializer
 from .serializers import UploadImagesSerializer, DetailedImageSerializer, \
-                        MoveImageToFolderSerializer
+                        MoveImageToFolderSerializer, MultipleImageIDsSerializer
+from ..albums.serializer import AddMultipleImagesToMultipleAlbumsSerializer
 from .models import Images
 from apis.users.views import get_user_from_id
 from apis.tags.serializers import TagSerializer
@@ -24,7 +26,9 @@ from datetime import datetime
 
 import magic
 
-from ..tags.models import Tags
+from ..sharing.models import Shared_Images
+from ..tags.models import Tags, Images_Tags
+from ..albums.models import Albums_Images, Albums
 
 
 class ImagesList(generics.ListAPIView):
@@ -218,7 +222,29 @@ def delete_image(request, image_id):
         return JsonResponse({
             'message': "permission denied"
         }, status=status.HTTP_403_FORBIDDEN)
-    image.delete()
+    # image.delete()
+    try:
+        Albums_Images.objects.get(image_id=image.id).delete()
+        # message = "Successfully"
+    except ObjectDoesNotExist:
+        print("This image {} does not exist in album!".format(image.id))
+    try:
+        Images_Tags.objects.get(image_id=image.id).delete()
+        # message = "Successfully"
+    except ObjectDoesNotExist:
+        print("This image {} does not have tag!".format(image.id))
+    try:
+        Shared_Images.objects.get(image_id=image.id).delete()
+        # message = "Successfully"
+    except ObjectDoesNotExist:
+        print("This image {} is not shared!".format(image.id))
+    try:
+        image.delete()
+        # message = "Successfully"
+    except ObjectDoesNotExist:
+        print("This image {} does not exist!".format(image.id))
+    except ProtectedError:
+        print("This image {} can't be deleted!!".format(image.id))
     return HttpResponse(status=status.HTTP_200_OK)
 
 
@@ -231,6 +257,7 @@ def delete_multiple_image(request):
         print("something")
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
     image_ids = serializer.data['ids']
+
     for image_id in image_ids:
         image = get_image_by_id(image_id)
         if image is None:
@@ -239,46 +266,115 @@ def delete_multiple_image(request):
             return JsonResponse({
                 'message': "permission denied for image id {}".format(image_id)
             }, status=status.HTTP_403_FORBIDDEN)
-        image.delete()
+        try:
+            Albums_Images.objects.filter(image_id=image_id).delete()
+            # message = "Successfully"
+        except ObjectDoesNotExist:
+            print("This image {} does not exist in album!".format(image.id))
+        try:
+            Images_Tags.objects.filter(image_id=image_id).delete()
+            # message = "Successfully"
+        except ObjectDoesNotExist:
+            print("This image {} does not have tag!".format(image.id))
+        try:
+            Shared_Images.objects.filter(image_id=image_id).delete()
+            # message = "Successfully"
+        except ObjectDoesNotExist:
+            print("This image {} is not shared!".format(image.id))
+        try:
+            image.delete()
+            # message = "Successfully"
+        except ObjectDoesNotExist:
+            print("This image {} does not exist!".format(image.id))
+        except ProtectedError:
+            print("This image {} can't be deleted!!".format(image.id))
     return HttpResponse(status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def star_image(request, image_id):
-    image = get_image_by_id(image_id)
-    if image is None:
-        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+def star_image(request):
     user_id = get_user_id_from_jwt(request)
-    if not is_owner(image.owner.id, user_id):
-        return JsonResponse({
-            'message': "permission denied"
-        }, status=status.HTTP_403_FORBIDDEN)
+    select_all = request.data['select_all']
+    if select_all:
+        folder_id = request.data['folder_id']
+        if folder_id != 0:
+            try:
+                Folders.objects.get(id=folder_id)
+            except ObjectDoesNotExist:
+                return JsonResponse({
+                    'message': 'Folder does not exist'
+                }, status=status.HTTP_404_NOT_FOUND)
+        try:
+            image_list = Images.objects.filter(folder_id=folder_id, owner_id=user_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'message': 'Images not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+    else:
+        image_id_list = request.data['image_id']
+        image_list = []
+        for id in image_id_list:
+            try:
+                image = Images.objects.get(id=id)
+            except ObjectDoesNotExist:
+                return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
-    image = change_image_star_status(image, True)
+            if not is_owner(image.owner.id, user_id):
+                return JsonResponse({
+                    'message': "permission denied"
+                }, status=status.HTTP_403_FORBIDDEN)
+            image_list.append(image)
+
+    for image in image_list:
+        image.star = True
+        image.save()
     return JsonResponse({
-        'image_id': image.id,
-        'star': image.star
-    }, status=status.HTTP_400_BAD_REQUEST)
+        'message': 'Add images to favourite'
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def un_star_image(request, image_id):
-    image = get_image_by_id(image_id)
-    if image is None:
-        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+def un_star_image(request):
     user_id = get_user_id_from_jwt(request)
-    if not is_owner(image.owner.id, user_id):
-        return JsonResponse({
-            'message': "permission denied"
-        }, status=status.HTTP_403_FORBIDDEN)
+    select_all = request.data['select_all']
+    if select_all:
+        folder_id = request.data['folder_id']
+        if folder_id != 0:
+            try:
+                Folders.objects.get(id=folder_id)
+            except ObjectDoesNotExist:
+                return JsonResponse({
+                    'message': 'Folder does not exist'
+                }, status=status.HTTP_404_NOT_FOUND)
+        try:
+            image_list = Images.objects.filter(folder_id=folder_id, owner_id=user_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'message': 'Images not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+    else:
+        image_id_list = request.data['image_id']
+        image_list = []
+        for id in image_id_list:
+            try:
+                image = Images.objects.get(id=id)
+            except ObjectDoesNotExist:
+                return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
-    image = change_image_star_status(image, False)
+            if not is_owner(image.owner.id, user_id):
+                return JsonResponse({
+                    'message': "permission denied"
+                }, status=status.HTTP_403_FORBIDDEN)
+            image_list.append(image)
+
+    for image in image_list:
+        image.star = False
+        image.save()
     return JsonResponse({
-        'image_id': image.id,
-        'star': image.star
-    }, status=status.HTTP_400_BAD_REQUEST)
+        'message': 'Removed images from favourite'
+    }, status=status.HTTP_200_OK)
 
 
 def change_image_star_status(instance, status):
@@ -433,3 +529,50 @@ def move_image_to_folder(request):
     }, status=status.HTTP_200_OK)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_multiple_images_to_multiple_albums(request):
+    owner_id = get_user_id_from_jwt(request)
+    serializer = AddMultipleImagesToMultipleAlbumsSerializer(data=request.data)
+    if not serializer.is_valid():
+        return JsonResponse({
+            "message": "Invalid Serializer"
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    albums_id = serializer.data['albums_id']
+    for album_id in albums_id:
+        try:
+            Albums.objects.get(id=album_id, owner_id=owner_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                "message": "Album not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    images = []
+    select_all = serializer.data['select_all']
+    if select_all:
+        try:
+            images = Images.objects.all().filter(owner_id=owner_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                "message": "Invalid image"
+            })
+    else:
+        image_id = serializer.data['images_id']
+        try:
+            for id in image_id:
+                images.append(Images.objects.get(id=id, owner_id=owner_id))
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                "message": "Image not found"
+            })
+    for album_id in albums_id:
+        for image in images:
+            try:
+                Albums_Images.objects.get(album_id=album_id, image_id=image.id)
+            except ObjectDoesNotExist:
+                Albums_Images.objects.create(album_id=album_id, image_id=image.id)
+
+    return JsonResponse({
+        "message": "successfully"
+    })
