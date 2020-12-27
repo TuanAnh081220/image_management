@@ -30,18 +30,12 @@ class TagsList(generics.ListAPIView):
         return Tags.objects.filter(Q(owner=None) | Q(owner_id=user_id)).order_by('-updated_at')
 
 # Create your views here.
-@api_view(['GET'])
-def tag_list(request):
-    tags = Tags.objects.all()
-    serializer = TagSerializer(tags, many=True)
-    return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def tag_detail(request, tag_id):
-    tags = Tags.objects.filter(tag_id=tag_id)
+    tags = Tags.objects.filter(id=tag_id)
     serializer = TagDetailSerializer(tags, many=True)
-    images = Images_Tags.objects.filter(tag_id=tag_id)
-    serializer.data['images'] = images
     return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
 
 @api_view(['POST'])
@@ -99,30 +93,54 @@ def filter_image_by_tag(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def set_image_tag(request, image_id):
+def set_image_tag(request):
+    user_id = get_user_id_from_jwt(request)
     serializer = SetImageTagSerializer(data=request.data)
-    image = get_image_by_id(image_id)
     if not serializer.is_valid():
         return JsonResponse({
-            'message': 'Invalid'
+            'message': 'Invalid serializer'
         }, status=status.HTTP_400_BAD_REQUEST)
+    select_all = serializer.data['select_all']
+    if select_all:
+        try:
+            image_list = Images.objects.filter(owner_id=user_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'message': 'Image does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+    else:
+        image_id = serializer.data['image_id']
+        image_list = []
+        for id in image_id:
+            try:
+                image = Images.objects.get(id=id)
+            except ObjectDoesNotExist:
+                return JsonResponse({
+                    'message': 'Image does not exist'
+                }, status=status.HTTP_404_NOT_FOUND)
+            image_list.append(image)
     tag_id = serializer.data['tag_id']
-    try:
-        Tags.objects.get(id=tag_id)
-    except ObjectDoesNotExist:
-        return JsonResponse({
-            'message': 'Tag does not exist'
-        }, status=status.HTTP_404_NOT_FOUND)
-    try:
-        Images_Tags.objects.get(image_id=image_id, tag_id=tag_id)
-    except ObjectDoesNotExist:
-        Images_Tags.objects.create(image=image, tag_id=tag_id)
-        return JsonResponse({
-            'message': 'Tag added'
-        }, status=status.HTTP_200_OK)
+    tag_list = []
+    for id in tag_id:
+        try:
+            tag = Tags.objects.get(id=id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'message': 'Tag does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+        tag_list.append(tag)
+    for image in image_list:
+        for tag in tag_list:
+            try:
+                Images_Tags.objects.get(image=image, tag=tag)
+            except ObjectDoesNotExist:
+                Images_Tags.objects.create(image=image, tag=tag)
+            else:
+                pass
     return JsonResponse({
-        'message': "Image already had this tag"
-    }, status=status.HTTP_404_NOT_FOUND)
+        'message': 'Tag added'
+    }, status=status.HTTP_200_OK)
+
 
 
 @api_view(['POST'])
