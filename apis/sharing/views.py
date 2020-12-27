@@ -75,7 +75,8 @@ def get_all_shared_image(request):
     shared_images = Shared_Images.objects.filter(shared_user_id=user_id)
     image_list = []
     for pair in shared_images:
-        image_list.append(Images.objects.get(id=pair.image_id))
+        image = Images.objects.get(id=pair.image_id)
+        image_list.append(image)
     serializer = DetailedImageSerializer(shared_images, many=True)
     return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
 
