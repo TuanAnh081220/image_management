@@ -245,40 +245,88 @@ def delete_multiple_image(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def star_image(request, image_id):
-    image = get_image_by_id(image_id)
-    if image is None:
-        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+def star_image(request):
     user_id = get_user_id_from_jwt(request)
-    if not is_owner(image.owner.id, user_id):
-        return JsonResponse({
-            'message': "permission denied"
-        }, status=status.HTTP_403_FORBIDDEN)
+    select_all = request.data['select_all']
+    if select_all:
+        folder_id = request.data['folder_id']
+        if folder_id != 0:
+            try:
+                Folders.objects.get(id=folder_id)
+            except ObjectDoesNotExist:
+                return JsonResponse({
+                    'message': 'Folder does not exist'
+                }, status=status.HTTP_404_NOT_FOUND)
+        try:
+            image_list = Images.objects.filter(folder_id=folder_id, owner_id=user_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'message': 'Images not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+    else:
+        image_id_list = request.data['image_id']
+        image_list = []
+        for id in image_id_list:
+            try:
+                image = Images.objects.get(id=id)
+            except ObjectDoesNotExist:
+                return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
-    image = change_image_star_status(image, True)
+            if not is_owner(image.owner.id, user_id):
+                return JsonResponse({
+                    'message': "permission denied"
+                }, status=status.HTTP_403_FORBIDDEN)
+            image_list.append(image)
+
+    for image in image_list:
+        image.star = True
+        image.save()
     return JsonResponse({
-        'image_id': image.id,
-        'star': image.star
-    }, status=status.HTTP_400_BAD_REQUEST)
+        'message': 'Add images to favourite'
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def un_star_image(request, image_id):
-    image = get_image_by_id(image_id)
-    if image is None:
-        return HttpResponse(status=status.HTTP_404_NOT_FOUND)
+def un_star_image(request):
     user_id = get_user_id_from_jwt(request)
-    if not is_owner(image.owner.id, user_id):
-        return JsonResponse({
-            'message': "permission denied"
-        }, status=status.HTTP_403_FORBIDDEN)
+    select_all = request.data['select_all']
+    if select_all:
+        folder_id = request.data['folder_id']
+        if folder_id != 0:
+            try:
+                Folders.objects.get(id=folder_id)
+            except ObjectDoesNotExist:
+                return JsonResponse({
+                    'message': 'Folder does not exist'
+                }, status=status.HTTP_404_NOT_FOUND)
+        try:
+            image_list = Images.objects.filter(folder_id=folder_id, owner_id=user_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'message': 'Images not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+    else:
+        image_id_list = request.data['image_id']
+        image_list = []
+        for id in image_id_list:
+            try:
+                image = Images.objects.get(id=id)
+            except ObjectDoesNotExist:
+                return HttpResponse(status=status.HTTP_404_NOT_FOUND)
 
-    image = change_image_star_status(image, False)
+            if not is_owner(image.owner.id, user_id):
+                return JsonResponse({
+                    'message': "permission denied"
+                }, status=status.HTTP_403_FORBIDDEN)
+            image_list.append(image)
+
+    for image in image_list:
+        image.star = False
+        image.save()
     return JsonResponse({
-        'image_id': image.id,
-        'star': image.star
-    }, status=status.HTTP_400_BAD_REQUEST)
+        'message': 'Removed images from favourite'
+    }, status=status.HTTP_200_OK)
 
 
 def change_image_star_status(instance, status):
