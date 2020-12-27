@@ -239,7 +239,9 @@ def delete_image(request, image_id):
     except ObjectDoesNotExist:
         print("This image {} is not shared!".format(image.id))
     try:
+        img = image.image
         image.delete()
+        img.delete()
         # message = "Successfully"
     except ObjectDoesNotExist:
         print("This image {} does not exist!".format(image.id))
