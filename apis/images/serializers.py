@@ -8,10 +8,26 @@ class UploadImagesSerializer(serializers.Serializer):
 
 
 class DetailedImageSerializer(serializers.ModelSerializer):
+    thumbnail_size = serializers.SerializerMethodField()
+    image_size = serializers.SerializerMethodField()
 
     class Meta:
         model = Images
         fields = '__all__'
+
+    def get_image_size(self,obj):
+        data = {
+            'width': obj.image.width,
+            'height': obj.image.height
+        }
+        return data
+
+    def get_thumbnail_size(self, obj):
+        data = {
+            'width': obj.thumbnail.width,
+            'height': obj.thumbnail.height
+        }
+        return data
 
 
 class ImageSerializer(serializers.ModelSerializer):

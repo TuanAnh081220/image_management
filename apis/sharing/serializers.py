@@ -28,7 +28,7 @@ class SharedImageSerializer(serializers.ModelSerializer):
         return Images.objects.get(id=obj.image.id).owner_id
 
     def get_image_thumbnail(self, obj):
-        return Images.objects.get(id=obj.image.id).thumbnail_path
+        return Images.objects.get(id=obj.image.id).thumbnail.url
 
 
 class SharingFolderSerializer(serializers.Serializer):

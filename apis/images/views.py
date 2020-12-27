@@ -70,7 +70,7 @@ def upload_image(request):
             size=img.size,
             title=title
         )
-        print(new_img.id)
+        print(new_img.thumbnail.url)
     return JsonResponse({
         'message': 'successfully uploaded'
     }, status=status.HTTP_200_OK)
