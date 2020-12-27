@@ -22,6 +22,8 @@ from apis.tags.serializers import TagSerializer
 from apis.folders.models import Folders
 from apis.users.models import Users
 
+from imagekit.utils import get_cache
+
 from datetime import datetime
 
 import magic
