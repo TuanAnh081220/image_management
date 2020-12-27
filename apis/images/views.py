@@ -23,6 +23,8 @@ from apis.folders.models import Folders
 from apis.users.models import Users
 import urllib.request
 
+from imagekit.utils import get_cache
+
 from datetime import datetime
 
 import magic
