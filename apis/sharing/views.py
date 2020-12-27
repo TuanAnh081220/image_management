@@ -190,16 +190,18 @@ def add_image_to_collection(request):
     select_all = request.data['select_all']
     if select_all:
         try:
-            image_list = Shared_Images.objects.filter(shared_user_id=user_id)
+            shared_list = Shared_Images.objects.filter(shared_user_id=user_id)
         except ObjectDoesNotExist:
             return JsonResponse({
                 'message': 'Shared image not found'
             }, status=status.HTTP_404_NOT_FOUND)
-        for image in image_list:
-            new_image = Images.objects.get(id=image.image_id)
+        for connection in shared_list:
+            img = Images.objects.get(id=connection.image_id)
+            new_image = img
             new_image.pk = None
             new_image.owner = get_user_from_id(user_id)
             new_image.folder_id = folder_id
+            new_image.image.save(img.title, img.image, True)
             new_image.star = new_image.is_trashed = False
             new_image.trashed_at = None
             new_image.created_at = new_image.updated_at = datetime.datetime.now()
@@ -208,10 +210,12 @@ def add_image_to_collection(request):
     else:
         image_id = request.data['image_id']
         for iterator in image_id:
-            new_image = Images.objects.get(id=iterator)
+            img = Images.objects.get(id=iterator)
+            new_image = img
             new_image.pk = None
             new_image.owner = get_user_from_id(user_id)
             new_image.folder_id = folder_id
+            new_image.image.save(img.title, img.image, True)
             new_image.star = new_image.is_trashed = False
             new_image.trashed_at = None
             new_image.created_at = new_image.updated_at = datetime.datetime.now()

@@ -9,10 +9,10 @@ from .views import FoldersList, \
     update_folder, \
     trash_multiple_folder, \
     restore_multiple_folder, \
-    delete_multiple_folder
+    delete_multiple_folder, get_folder_list
 
 urlpatterns = [
-    path('', FoldersList.as_view(), name="list_folders"),
+    path('', get_folder_list, name="list_folders"),
     path('create', create_folder, name="create_folder"),
     path('<int:folder_id>/detail', get_detailed_folder, name="get_detailed_folder"),
     path('<int:folder_id>/trash', trash_folder, name="trash_folder"),
