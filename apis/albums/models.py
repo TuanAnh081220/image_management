@@ -19,7 +19,7 @@ class Albums(models.Model):
         ordering = ['title', 'updated_at', 'created_at']
 
 
-class AlbumsHaveImages(models.Model):
+class Albums_Images(models.Model):
     album = models.ForeignKey(Albums, on_delete=models.CASCADE)
     image = models.ForeignKey(Images, on_delete=models.CASCADE)
 

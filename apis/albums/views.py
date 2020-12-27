@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 import json
 from utils.user import get_user_id_from_jwt
-from .models import Albums, AlbumsHaveImages
+from .models import Albums, Albums_Images
 from apis.images.models import Images
 from rest_framework import status, generics, filters
 from rest_framework.decorators import api_view, permission_classes
@@ -16,7 +16,7 @@ from datetime import datetime
 
 from .serializer import AlbumsSerializer, DetailedAlbumSerializer, UpdateOrCreateAlbumSerializer, \
     SelectImages, ListImageInAlbum, DeleteImageFromAlbum
-from apis.images.serializers import ImageIdSerializer, ThumbnailPathImageSerializer, ImageSerializer, DetailedImageSerializer
+from apis.images.serializers import ImageIdSerializer, ImageSerializer, DetailedImageSerializer
 
 
 # class AlbumsList(generics.ListAPIView):
@@ -46,7 +46,7 @@ def list_album(request):
             try:
                 album_id = AlbumsSerializer(instance=album).data['id']
                 images = Images.objects.all().raw(
-                    "SELECT id FROM images WHERE id IN (SELECT image_id FROM albums_have_images WHERE album_id = {}) LIMIT 1".format(
+                    "SELECT id FROM images WHERE id IN (SELECT image_id FROM albums_have_images WHERE album_id = {})".format(
                         album_id))
 
                 serializer = AlbumsSerializer(instance=album)
@@ -57,15 +57,13 @@ def list_album(request):
                         return JsonResponse({
                             "message": "permission denied"
                         }, status=status.HTTP_403_FORBIDDEN)
+                    break
                 data_for_album = serializer.data
                 data_for_album["total_images"] = len(images)
                 data_images['info'] = data_for_album
-
-                # data_albums[album.title] = serializer.data
-                images_ = []
                 if len(images) > 0:
                     for image in images:
-                        data_images['thumbnail'] = DetailedImageSerializer(instance=image).data['path']
+                        data_images['thumbnail'] = DetailedImageSerializer(instance=image).data['image']
                 else:
                     data_images['thumbnail'] = ''
             except ObjectDoesNotExist:
@@ -74,7 +72,6 @@ def list_album(request):
                 }, status=status.HTTP_404_NOT_FOUND)
             # print(data_albums[0])
             data_albums.append(data_images)
-            # data_albums[album.title]['images'] = data_images
     except ObjectDoesNotExist:
         return JsonResponse({
             "message": "album not found"
@@ -183,7 +180,7 @@ def delete_album(request, album_id):
                 "message": "permission denied"
             }, status=status.HTTP_403_FORBIDDEN)
 
-        AlbumsHaveImages.objects.filter(id=album_id).update(id=-1)
+        Albums_Images.objects.filter(id=album_id).update(id=-1)
         album.delete()
         return JsonResponse({
             "message": "successfully"
@@ -254,10 +251,10 @@ def add_image_to_album(request, album_id):
     already_images = []
     for image in images:
         try:
-            AlbumsHaveImages.objects.get(album_id=album_id, image_id=image.id)
+            Albums_Images.objects.get(album_id=album_id, image_id=image.id)
             already_images.append(image.id)
         except ObjectDoesNotExist:
-            AlbumsHaveImages.objects.create(album=album, image_id=image.id)
+            Albums_Images.objects.create(album=album, image_id=image.id)
         # return JsonResponse({
         #     "message": "Album already had this image"
         # }, status=status.HTTP_400_BAD_REQUEST)
@@ -292,6 +289,7 @@ def get_detailed_album(request, album_id):
     image_id_serializer = ImageIdSerializer(image, many=True)
 
     data = serializer.data
+    data['total_images'] = len(image)
     data['images'] = image_id_serializer.data
 
     return JsonResponse({
@@ -319,13 +317,13 @@ def delete_image_in_album(request, album_id):
     invalid_image = []
     if select_all:
         try:
-            images = AlbumsHaveImages.objects.all().filter(album_id=album_id)
+            images = Albums_Images.objects.all().filter(album_id=album_id)
         except ObjectDoesNotExist:
             return JsonResponse({
                 "message": "Invalid image"
             })
         for image in images:
-            AlbumsHaveImages.objects.get(album_id=album_id, image_id=image.image_id).delete()
+            Albums_Images.objects.get(album_id=album_id, image_id=image.image_id).delete()
         return JsonResponse({
             "message": "successfully"
         })
@@ -334,7 +332,7 @@ def delete_image_in_album(request, album_id):
         image_id = serializer.data['image_id']
         for id in image_id:
             try:
-                AlbumsHaveImages.objects.get(album_id=album_id, image_id=id).delete()
+                Albums_Images.objects.get(album_id=album_id, image_id=id).delete()
             except ObjectDoesNotExist:
                 invalid_image.append(id)
         if len(invalid_image) > 0:
