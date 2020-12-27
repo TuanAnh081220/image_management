@@ -11,13 +11,13 @@ from rest_framework.permissions import IsAuthenticated
 
 from apis.folders.models import Folders
 from apis.folders.serializers import FolderDetailSerializer
-from apis.folders.views import get_folder_content
 from apis.images.models import Images
 from apis.images.serializers import DetailedImageSerializer
 from apis.sharing.serializers import SharingImageSerializer, SharedImageSerializer, SharingFolderSerializer, \
     SharedFolderSerializer
 from apis.sharing.models import Shared_Images, Shared_Folders
 from apis.users.models import Users
+from apis.users.views import get_user_from_id
 from utils.user import get_user_id_from_jwt
 
 
@@ -120,13 +120,6 @@ def get_all_shared_folders(request):
     serializer = SharedFolderSerializer(shared_folders, many=True)
     return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
 
-def is_accessible(user_id, folder_id):
-    while folder_id != 0:
-        try:
-            Shared_Folders.objects.get(folder_id=folder_id, shared_user_id=user_id)
-        except ObjectDoesNotExist:
-            folder_id = Folders.objects.get(id=folder_id).parent_id
-    return True if folder_id !=0 else False
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -174,3 +167,56 @@ def get_shared_image_detail(request):
         }, status=status.HTTP_404_NOT_FOUND)
     serializer = DetailedImageSerializer(image, many=False)
     return JsonResponse(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_image_to_collection(request):
+    user_id = get_user_id_from_jwt(request)
+    # serializer = AddImgToCollectionSerializer(data=request.data)
+    # if not serializer.is_valid():
+    #     return JsonResponse({
+    #         'message': 'Invalid serializer'
+    #     }, status=status.HTTP_400_BAD_REQUEST)
+
+    folder_id = request.data['folder_id']
+    if folder_id != 0:
+        try:
+            Folders.objects.get(id=folder_id, owner_id = user_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'message': 'Folder not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    select_all = request.data['select_all']
+    if select_all:
+        try:
+            image_list = Shared_Images.objects.filter(shared_user_id=user_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                'message': 'Shared image not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        for image in image_list:
+            new_image = Images.objects.get(id=image.image_id)
+            new_image.pk = None
+            new_image.owner = get_user_from_id(user_id)
+            new_image.folder_id = folder_id
+            new_image.star = new_image.is_trashed = False
+            new_image.trashed_at = None
+            new_image.created_at = new_image.updated_at = datetime.datetime.now()
+            new_image.is_public = False
+            new_image.save()
+    else:
+        image_id = request.data['image_id']
+        for iterator in image_id:
+            new_image = Images.objects.get(id=iterator)
+            new_image.pk = None
+            new_image.owner = get_user_from_id(user_id)
+            new_image.folder_id = folder_id
+            new_image.star = new_image.is_trashed = False
+            new_image.trashed_at = None
+            new_image.created_at = new_image.updated_at = datetime.datetime.now()
+            new_image.is_public = False
+            new_image.save()
+    return JsonResponse({
+        'message': 'Added to user {} collection'.format(user_id)
+    }, status=status.HTTP_200_OK)
