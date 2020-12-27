@@ -196,7 +196,7 @@ def add_image_to_collection(request):
                 'message': 'Shared image not found'
             }, status=status.HTTP_404_NOT_FOUND)
         for image in image_list:
-            new_image = Images.objects.get(id=image.image_id)
+            new_image = Images.objects.get(id=image.images_id)
             new_image.pk = None
             new_image.owner = get_user_from_id(user_id)
             new_image.folder_id = folder_id

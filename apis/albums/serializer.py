@@ -21,7 +21,7 @@ class UpdateOrCreateAlbumSerializer(serializers.Serializer):
 
 class SelectImages(serializers.Serializer):
     select_all = serializers.BooleanField()
-    image_id = serializers.ListField(
+    images_id = serializers.ListField(
         child=serializers.IntegerField(min_value=0)
     )
 
@@ -34,3 +34,13 @@ class ListImageInAlbum(serializers.ModelSerializer):
     class Meta:
         model = Albums
         fields = ('id', 'title')
+
+
+class AddMultipleImagesToMultipleAlbumsSerializer(serializers.Serializer):
+    select_all = serializers.BooleanField()
+    albums_id = serializers.ListField(
+        child=serializers.IntegerField(min_value=0)
+    )
+    images_id = serializers.ListField(
+        child=serializers.IntegerField(min_value=0)
+    )

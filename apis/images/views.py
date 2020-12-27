@@ -15,6 +15,7 @@ from utils.user import get_user_id_from_jwt
 from utils.serializers import MultiplIDsSerializer
 from .serializers import UploadImagesSerializer, DetailedImageSerializer, \
                         MoveImageToFolderSerializer, MultipleImageIDsSerializer
+from ..albums.serializer import AddMultipleImagesToMultipleAlbumsSerializer
 from .models import Images
 from apis.users.views import get_user_from_id
 from apis.tags.serializers import TagSerializer
@@ -27,7 +28,8 @@ import magic
 
 from ..sharing.models import Shared_Images
 from ..tags.models import Tags, Images_Tags
-from ..albums.models import Albums_Images
+from ..albums.models import Albums_Images, Albums
+
 
 class ImagesList(generics.ListAPIView):
     serializer_class = DetailedImageSerializer
@@ -478,3 +480,50 @@ def move_image_to_folder(request):
     }, status=status.HTTP_200_OK)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_multiple_images_to_multiple_albums(request):
+    owner_id = get_user_id_from_jwt(request)
+    serializer = AddMultipleImagesToMultipleAlbumsSerializer(data=request.data)
+    if not serializer.is_valid():
+        return JsonResponse({
+            "message": "Invalid Serializer"
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    albums_id = serializer.data['albums_id']
+    for album_id in albums_id:
+        try:
+            Albums.objects.get(id=album_id, owner_id=owner_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                "message": "Album not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    images = []
+    select_all = serializer.data['select_all']
+    if select_all:
+        try:
+            images = Images.objects.all().filter(owner_id=owner_id)
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                "message": "Invalid image"
+            })
+    else:
+        image_id = serializer.data['images_id']
+        try:
+            for id in image_id:
+                images.append(Images.objects.get(id=id, owner_id=owner_id))
+        except ObjectDoesNotExist:
+            return JsonResponse({
+                "message": "Image not found"
+            })
+    for album_id in albums_id:
+        for image in images:
+            try:
+                Albums_Images.objects.get(album_id=album_id, image_id=image.id)
+            except ObjectDoesNotExist:
+                Albums_Images.objects.create(album_id=album_id, image_id=image.id)
+
+    return JsonResponse({
+        "message": "successfully"
+    })

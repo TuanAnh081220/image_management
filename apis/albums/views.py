@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from datetime import datetime
 
 from .serializer import AlbumsSerializer, DetailedAlbumSerializer, UpdateOrCreateAlbumSerializer, \
-    SelectImages, ListImageInAlbum, DeleteImageFromAlbum
+    SelectImages, ListImageInAlbum, DeleteImageFromAlbum, AddMultipleImagesToMultipleAlbumsSerializer
 from apis.images.serializers import ImageIdSerializer, ImageSerializer, DetailedImageSerializer
 
 
@@ -325,7 +325,7 @@ def delete_image_in_album(request, album_id):
                 "message": "Invalid image"
             })
         for image in images:
-            Albums_Images.objects.get(album_id=album_id, image_id=image.image_id).delete()
+            Albums_Images.objects.get(album_id=album_id, image_id=image.images_id).delete()
         return JsonResponse({
             "message": "successfully"
         })
@@ -345,6 +345,8 @@ def delete_image_in_album(request, album_id):
             return JsonResponse({
                 "message": "successfully"
             })
+
+
 
     # print(images)
     # for image in images:
