@@ -25,6 +25,15 @@ class FoldersList(generics.ListAPIView):
         return Folders.objects.filter(owner_id=user_id, parent_id=0).order_by('-updated_at')
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_folder_list(request):
+    user_id = get_user_id_from_jwt(request)
+    folders = Folders.objects.filter(owner_id=user_id, parent_id=0).order_by('-updated_at')
+    serializer = FolderDetailSerializer(folders, many=True)
+    return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_folder(request):
