@@ -1,5 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes
@@ -139,3 +139,18 @@ def get_user_from_id(user_id):
         return user
     except ObjectDoesNotExist:
         return ObjectDoesNotExist
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_avatar(request):
+    user_id = get_user_id_from_jwt(request)
+    if not request.FILES['avatar']:
+        return JsonResponse({
+            'message': 'no images uploaded'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    avatar = request.FILES['avatar']
+    user = Users.objects.get(id=user_id)
+    user.avatar = avatar
+    user.save()
+    return HttpResponse(status=status.HTTP_200_OK)
