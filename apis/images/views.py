@@ -22,6 +22,8 @@ from apis.tags.serializers import TagSerializer
 from apis.folders.models import Folders
 from apis.users.models import Users
 
+from imagekit.utils import get_cache
+
 from datetime import datetime
 
 import magic
@@ -251,7 +253,9 @@ def delete_image(request, image_id):
     except ObjectDoesNotExist:
         print("This image {} is not shared!".format(image.id))
     try:
+        img = image.image
         image.delete()
+        img.delete()
         # message = "Successfully"
     except ObjectDoesNotExist:
         print("This image {} does not exist!".format(image.id))
