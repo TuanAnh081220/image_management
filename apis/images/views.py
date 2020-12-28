@@ -14,7 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from utils.user import get_user_id_from_jwt
 from utils.serializers import MultiplIDsSerializer
 from .serializers import UploadImagesSerializer, DetailedImageSerializer, \
-                        MoveImageToFolderSerializer, MultipleImageIDsSerializer
+    MoveImageToFolderSerializer, MultipleImageIDsSerializer
 from ..albums.serializer import AddMultipleImagesToMultipleAlbumsSerializer
 from .models import Images
 from apis.users.views import get_user_from_id
@@ -41,6 +41,18 @@ class ImagesList(generics.ListAPIView):
     def get_queryset(self):
         user_id = get_user_id_from_jwt(self.request)
         return Images.objects.filter(is_trashed=False, owner_id=user_id).order_by('-updated_at')
+
+
+class ImagesListTrash(generics.ListAPIView):
+    serializer_class = DetailedImageSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['star']
+    search_fields = ['title']
+
+    def get_queryset(self):
+        user_id = get_user_id_from_jwt(self.request)
+        return Images.objects.filter(is_trashed=True, owner_id=user_id).order_by('-updated_at')
 
 
 @api_view(['POST'])
@@ -576,3 +588,15 @@ def add_multiple_images_to_multiple_albums(request):
     return JsonResponse({
         "message": "successfully"
     })
+
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def download_image(request, image_id):
+    img = Images.objects.get(id=image_id)
+
+    image = img.image.name.split('/')[-1]
+    response = HttpResponse(img.image, content_type='image/png')
+    response['Content-Disposition'] = 'attachment; filename=%s' % image
+
+    return response

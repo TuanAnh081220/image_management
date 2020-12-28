@@ -1,13 +1,13 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import UpdateAPIView
 from rest_framework.response import Response
 
 from .models import Users, PendingUsers
-from .serializers import UserSerializer, DetailedUserSerializer, PendingUserSerializer, UpdateDetailedUserSerializer
+from .serializers import UserSerializer, GetAllDetailedUserSerializer, DetailedUserSerializer, PendingUserSerializer, UpdateDetailedUserSerializer
 from rest_framework.permissions import IsAuthenticated
 from utils.permission import IsAdmin
 from utils.user import get_user_id_from_jwt
@@ -17,9 +17,9 @@ class UsersViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Users.objects.all()
     serializer_class = UserSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['is_admin', 'is_blocked']
-    search_fields = ['email', 'username']
+    search_fields = ['email']
 
 
 class UserUpdateView(UpdateAPIView):
@@ -38,7 +38,7 @@ def get_detailed_user(request):
         return JsonResponse({
             'message': 'User does not exist!'
         }, status=status.HTTP_404_NOT_FOUND)
-    serializer = DetailedUserSerializer(instance=user)
+    serializer = GetAllDetailedUserSerializer(instance=user)
     return JsonResponse({
         'user': serializer.data
     }, status=status.HTTP_200_OK)

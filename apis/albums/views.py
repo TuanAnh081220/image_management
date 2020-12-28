@@ -288,7 +288,7 @@ def get_detailed_album(request, album_id):
         "SELECT id FROM images WHERE id IN (SELECT image_id FROM albums_have_images WHERE album_id = {}) AND "
         "is_trashed = false".format(
             album_id))
-    image_id_serializer = ImageIdSerializer(image, many=True)
+    image_id_serializer = DetailedImageSerializer(image, many=True)
 
     data = serializer.data
     data['total_images'] = len(image)
@@ -331,7 +331,7 @@ def delete_image_in_album(request, album_id):
         })
 
     else:
-        image_id = serializer.data['image_id']
+        image_id = serializer.data['images_id']
         for id in image_id:
             try:
                 Albums_Images.objects.get(album_id=album_id, image_id=id).delete()

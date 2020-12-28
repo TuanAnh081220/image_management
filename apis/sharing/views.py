@@ -73,7 +73,11 @@ def share_image(request):
 def get_all_shared_image(request):
     user_id = get_user_id_from_jwt(request)
     shared_images = Shared_Images.objects.filter(shared_user_id=user_id)
-    serializer = SharedImageSerializer(shared_images, many=True)
+    images = []
+    for pair in shared_images:
+        image = Images.objects.get(id=pair.image_id)
+        images.append(image)
+    serializer = DetailedImageSerializer(images, many=True)
     return JsonResponse(serializer.data, status=status.HTTP_200_OK, safe=False)
 
 

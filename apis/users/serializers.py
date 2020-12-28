@@ -4,6 +4,12 @@ from rest_framework.serializers import ModelSerializer, Serializer
 from .models import Users, PendingUsers
 
 
+class GetAllDetailedUserSerializer(ModelSerializer):
+    class Meta:
+        model = Users
+        fields = '__all__'
+
+
 class UserSerializer(ModelSerializer):
     class Meta:
         model = Users

@@ -49,7 +49,6 @@ class DetailedImageSerializer(serializers.ModelSerializer):
 
 
 class ImageSerializer(serializers.ModelSerializer):
-    thumbnail_path = serializers.SerializerMethodField()
 
     class Meta:
         model = Images
